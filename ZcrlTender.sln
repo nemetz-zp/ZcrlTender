@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZcrlTender", "ZcrlTender\ZcrlTender.csproj", "{66B27F9F-790F-4738-9D71-E3B615A83B4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenderLibrary", "TenderLibrary\TenderLibrary.csproj", "{1E89CB03-B6C9-4753-9896-BAF17A1FDC1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66B27F9F-790F-4738-9D71-E3B615A83B4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B27F9F-790F-4738-9D71-E3B615A83B4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B27F9F-790F-4738-9D71-E3B615A83B4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B27F9F-790F-4738-9D71-E3B615A83B4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E89CB03-B6C9-4753-9896-BAF17A1FDC1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E89CB03-B6C9-4753-9896-BAF17A1FDC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E89CB03-B6C9-4753-9896-BAF17A1FDC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E89CB03-B6C9-4753-9896-BAF17A1FDC1D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

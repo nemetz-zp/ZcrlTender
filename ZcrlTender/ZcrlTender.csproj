@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{66B27F9F-790F-4738-9D71-E3B615A83B4B}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ZcrlTender</RootNamespace>
+    <AssemblyName>ZcrlTender</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Aha-Soft-Universal-Shop-Cash-register.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionCommentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActionCommentForm.Designer.cs">
+      <DependentUpon>ActionCommentForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddEditTPRecordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddEditTPRecordForm.Designer.cs">
+      <DependentUpon>AddEditTPRecordForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddEditFileForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddEditFileForm.Designer.cs">
+      <DependentUpon>AddEditFileForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddYearForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddYearForm.Designer.cs">
+      <DependentUpon>AddYearForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ContractForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ContractForm.Designer.cs">
+      <DependentUpon>ContractForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataGridViewHelper.cs" />
+    <Compile Include="DkCodeChangesHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DkCodeChangesHistoryForm.Designer.cs">
+      <DependentUpon>DkCodeChangesHistoryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EstimateFreeMoneyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EstimateFreeMoneyForm.Designer.cs">
+      <DependentUpon>EstimateFreeMoneyForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileManager.cs" />
+    <Compile Include="InvoiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvoiceForm.Designer.cs">
+      <DependentUpon>InvoiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PlannedSpendingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlannedSpendingForm.Designer.cs">
+      <DependentUpon>PlannedSpendingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\ContractsTableEntry.cs" />
+    <Compile Include="ViewModels\EstimateCellRecord.cs" />
+    <Compile Include="EstimateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EstimateForm.Designer.cs">
+      <DependentUpon>EstimateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainProgramForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainProgramForm.Designer.cs">
+      <DependentUpon>MainProgramForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormStyles.cs" />
+    <Compile Include="MoneyRemainsRecord.cs" />
+    <Compile Include="MyHelper.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TenderContext.cs" />
+    <Compile Include="TenderDbInitializer.cs" />
+    <Compile Include="TenderYearForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TenderYearForm.Designer.cs">
+      <DependentUpon>TenderYearForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\EstimatesTableEntry.cs" />
+    <Compile Include="ViewModels\InvoiceRecordsTableEntry.cs" />
+    <Compile Include="ViewModels\TenderPlanItemsTableEntry.cs" />
+    <Compile Include="WaitingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WaitingForm.Designer.cs">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ActionCommentForm.resx">
+      <DependentUpon>ActionCommentForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddEditTPRecordForm.resx">
+      <DependentUpon>AddEditTPRecordForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddEditFileForm.resx">
+      <DependentUpon>AddEditFileForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddYearForm.resx">
+      <DependentUpon>AddYearForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ContractForm.resx">
+      <DependentUpon>ContractForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DkCodeChangesHistoryForm.resx">
+      <DependentUpon>DkCodeChangesHistoryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EstimateForm.resx">
+      <DependentUpon>EstimateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EstimateFreeMoneyForm.resx">
+      <DependentUpon>EstimateFreeMoneyForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainProgramForm.resx">
+      <DependentUpon>MainProgramForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InvoiceForm.resx">
+      <DependentUpon>InvoiceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlannedSpendingForm.resx">
+      <DependentUpon>PlannedSpendingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="TenderYearForm.resx">
+      <DependentUpon>TenderYearForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WaitingForm.resx">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Aha-Soft-Universal-Shop-Cash-register.ico" />
+    <None Include="Resources\ajax_loader2.gif" />
+    <None Include="Resources\loader %281%29.gif" />
+    <None Include="Resources\loader.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TenderLibrary\TenderLibrary.csproj">
+      <Project>{1e89cb03-b6c9-4753-9896-baf17a1fdc1d}</Project>
+      <Name>TenderLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
