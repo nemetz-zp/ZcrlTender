@@ -15,11 +15,20 @@ namespace ZcrlTender
     {
         private TenderPlanRecord planRecord;
 
-        private Estimate relatedEstimate;
-        private List<KekvCode> primaryKekvList;
-        private List<KekvCode> altKekvList;
+        private List<KekvRemain> primaryKekvList;
+        private List<KekvRemain> altKekvList;
+        private List<Estimate> estimateList;
 
-        private List<decimal> kekvsRemains;
+        private volatile bool controlWasChangedByUser;
+
+        private bool dbWasChanged;
+        public bool DbWasChanged
+        {
+            get
+            {
+                return dbWasChanged;
+            }
+        }
 
         class KekvRemain
         {
@@ -28,56 +37,89 @@ namespace ZcrlTender
         }
 
         // Создание нового кода в плане
-        public AddEditTPRecordForm(Estimate selectedEstimate)
+        public AddEditTPRecordForm(TenderYear year)
         {
             InitializeComponent();
 
-            relatedEstimate = selectedEstimate;
-            primaryKekvList = new List<KekvCode>();
-            kekvsRemains = new List<decimal>();
+            button1.Visible = UserSession.IsAuthorized;
 
+            dbWasChanged = false;
+            moneyRemainLabel.Text = string.Empty;
+            
             using(TenderContext tc = new TenderContext())
             {
-                // Список КЕКВов с заложеными на нём (по смете) годовыми суммами
-                List<KekvRemain> kekvsRemainsByEstimate = (from rec in tc.BalanceChanges
-                                   where (rec.EstimateId == relatedEstimate.Id) && (rec.PrimaryKekvSum > 0)
-                                   group rec by rec.PrimaryKekv into kekvGroup
-                                   select new KekvRemain { Kekv = kekvGroup.Key, Sum = kekvGroup.Sum(p => p.PrimaryKekvSum) } into g1
-                                   where g1.Sum > 0
-                                   select g1).ToList();
+                estimateList = tc.Estimates.Where(p => p.TenderYearId == year.Id).ToList();
+                controlWasChangedByUser = false;
+                estimatesCBList.DataSource = estimateList;
+                controlWasChangedByUser = true;
+                estimatesCBList.DisplayMember = "Name";
 
-                List<KekvRemain> plannedMoneyOnKekvs = (from planItem in tc.TenderPlanRecords.ToList()
-                                         join k in kekvsRemainsByEstimate on planItem.PrimaryKekvId equals k.Kekv.Id
-                                         select new KekvRemain { Kekv = k.Kekv, Sum = k.Sum - planItem.Sum } into g
-                                         where g.Sum > 0
-                                         select g).ToList();
-
-                // Загружаем список КЕКВов с остатками нераспределённых средств по ним
-                foreach(KekvRemain item in plannedMoneyOnKekvs)
-                {
-                    primaryKekvList.Add(item.Kekv);
-                    kekvsRemains.Add(item.Sum);
-                }
-
-                altKekvList = (from k in tc.KekvCodes select k).ToList();
-
-                mainKekv.DataSource = primaryKekvList;
+                altKekvList = tc.KekvCodes.Select(p => new KekvRemain { Kekv = p }).ToList();
                 altKekv.DataSource = altKekvList;
-                mainKekv.DisplayMember = altKekv.DisplayMember = "Code";
-                mainKekv.ValueMember = altKekv.ValueMember = "Id";
 
+                mainKekv.DisplayMember = altKekv.DisplayMember = "Kekv";
+
+                Estimate selectedEstimate = estimatesCBList.SelectedItem as Estimate;
+                LoadKekvsOnEstimate(selectedEstimate);
                 LoadDkCodeList();
 
                 mainKekv.SelectedIndexChanged += mainKekv_SelectedIndexChangedHandler;
             }
         }
 
-        private void mainKekv_SelectedIndexChangedHandler(object sender, EventArgs e)
+        private void LoadKekvsOnEstimate(Estimate est)
+        {
+            if(est == null)
+            {
+                return;
+            }
+
+            using (TenderContext tc = new TenderContext())
+            {
+                // Список КЕКВов с заложеными на нём (по смете) годовыми суммами
+                List<KekvRemain> kekvsRemainsByEstimate = (from rec in tc.BalanceChanges
+                                                           where (rec.EstimateId == est.Id) && ((rec.PrimaryKekvSum > 0) || (rec.PlannedSpendingId != null))
+                                                           group rec by rec.PrimaryKekv into kekvGroup
+                                                           select new KekvRemain { Kekv = kekvGroup.Key, Sum = kekvGroup.Sum(p => p.PrimaryKekvSum) } into g1
+                                                           where g1.Sum > 0
+                                                           select g1).ToList();
+
+                // Отминусовываем от них суммы заложенные в годовом плане
+                List<KekvRemain> plannedMoneyOnKekvs = (from planItem in tc.TenderPlanRecords.ToList()
+                                                        where planItem.EstimateId == est.Id
+                                                        group planItem by planItem.PrimaryKekv into g1
+                                                        select new KekvRemain { Kekv = g1.Key, Sum = g1.Sum(p => p.Sum) }).ToList();
+                List<KekvRemain> result = (from rec in kekvsRemainsByEstimate
+                                           join planItem in plannedMoneyOnKekvs on rec.Kekv equals planItem.Kekv into j1
+                                           from rightSide in j1.DefaultIfEmpty(new KekvRemain { Kekv = rec.Kekv, Sum = 0 })
+                                           select new KekvRemain { Kekv = rec.Kekv, Sum = rec.Sum - rightSide.Sum }).ToList();
+
+                controlWasChangedByUser = false;
+                mainKekv.DataSource = result;
+                controlWasChangedByUser = true;
+                ShowKekvRemain();
+                LoadDkCodeList();
+            }
+        }
+
+        private void ShowKekvRemain()
         {
             mainKekv.Enabled = dkCodesCBList.Enabled = false;
-            moneyRemainLabel.Text = string.Format("Доступно: {0:N2} грн.", kekvsRemains[mainKekv.SelectedIndex]);
-            LoadDkCodeList();
+            KekvRemain selectedMainKekv = mainKekv.SelectedItem as KekvRemain;
+            moneyRemainLabel.Text = string.Format("Вільні (нерозподілені) кошти: {0:N2} грн.", selectedMainKekv.Sum);
+            dkCodeSum.Value = (dkCodeSum.Value > selectedMainKekv.Sum) ? selectedMainKekv.Sum : dkCodeSum.Value;
+            dkCodeSum.Maximum = selectedMainKekv.Sum;
+            
             mainKekv.Enabled = dkCodesCBList.Enabled = true;
+        }
+
+        private void mainKekv_SelectedIndexChangedHandler(object sender, EventArgs e)
+        {
+            if (controlWasChangedByUser)
+            {
+                ShowKekvRemain();
+                LoadDkCodeList();
+            }
         }
 
         // Загрузка списка кодов ДК по выбраному КЕКВ
@@ -85,14 +127,18 @@ namespace ZcrlTender
         {
             using(TenderContext tc = new TenderContext())
             {
-                int selectedKekvId = Convert.ToInt32(mainKekv.SelectedValue);
+                KekvRemain selectedMainKekv = mainKekv.SelectedItem as KekvRemain;
+                Estimate selectedEstimate = estimatesCBList.SelectedItem as Estimate;
+
+                if (selectedEstimate == null || selectedMainKekv == null)
+                    return;
 
                 // Получаем список всех кодов ДК
                 List<DkCode> allDkCodesList = tc.DkCodes.ToList();
 
                 // Исключаем из списка кодов ДК, коды по которым уже существуют записи
-                List<DkCode> existingDkCodesOnKekv = tc.TenderPlanRecords.Where(p => (p.EstimateId == relatedEstimate.Id) && (p.PrimaryKekv.Id == selectedKekvId)).Select(p => p.Dk).ToList();
-                dkCodesCBList.DataSource = allDkCodesList.Except(existingDkCodesOnKekv);
+                List<DkCode> existingDkCodesOnKekv = tc.TenderPlanRecords.Where(p => (p.EstimateId == selectedEstimate.Id) && (p.PrimaryKekv.Id == selectedMainKekv.Kekv.Id)).Select(p => p.Dk).ToList();
+                dkCodesCBList.DataSource = allDkCodesList.Except(existingDkCodesOnKekv).ToList();
                 dkCodesCBList.DisplayMember = "FullName";
                 dkCodesCBList.ValueMember = "Id";
                 dkCodesCBList.Refresh();
@@ -100,52 +146,125 @@ namespace ZcrlTender
         }
 
         // Открытие кода плана для редактирование
-        public AddEditTPRecordForm(int tenderPlanRecordId)
+        public AddEditTPRecordForm(TenderPlanRecord tenderPlanRecord)
         {
+            InitializeComponent();
+
+            button1.Visible = UserSession.IsAuthorized;
+
+            if (!UserSession.IsAuthorized)
+            {
+                this.Text = "Перегляд запису у річному плані";
+            }
+            else
+            {
+                this.Text = "Редагування запису у річному плані";
+            }
+
+            dbWasChanged = false;
+
+            this.Text = "Редагування запису в річному плані";
+
             using(TenderContext tc = new TenderContext())
             {
-                planRecord = tc.TenderPlanRecords.Where(p => p.Id == tenderPlanRecordId).First();
+                tc.TenderPlanRecords.Attach(tenderPlanRecord);
+                planRecord = tenderPlanRecord;
 
                 // Получаем поступления на КЕКВ по смете
                 decimal maxMoneyOnKekv = (from rec in tc.BalanceChanges.ToList()
-                                          where (rec.PrimaryKekvId == planRecord.PrimaryKekvId) && (rec.PrimaryKekvSum > 0)
-                                         group rec by rec.PrimaryKekvId into g1
+                                          where (rec.PrimaryKekvId == planRecord.PrimaryKekvId) 
+                                                && (rec.EstimateId == planRecord.EstimateId) 
+                                                && ((rec.PrimaryKekvSum > 0) || (rec.PlannedSpendingId != null))
+                                          group rec by rec.PrimaryKekvId into g1
                                           select g1.Sum(p => p.PrimaryKekvSum)).FirstOrDefault();
+                
+                // Деньги занятые другими записями в годовом плане по этому КЕКВ
+                decimal moneyOnOtherRecords = (from rec in tc.TenderPlanRecords.ToList()
+                                               where (rec.PrimaryKekvId == planRecord.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId)
+                                               group rec by rec.PrimaryKekvId into g1
+                                               select g1.Sum(p => p.Sum)).FirstOrDefault();
+
                 // Деньги занятые договорами
                 decimal kekvMoneyOnContracts = (from rec in tc.Contracts.ToList()
                                                 where (rec.PrimaryKekvId == rec.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId)
                                                 group rec by rec.PrimaryKekvId into g1
                                                 select g1.Sum(p => p.Sum)).FirstOrDefault();
-                // Доступный остаток на КЕКВ
-                maxMoneyOnKekv -= kekvMoneyOnContracts;
-                moneyRemainLabel.Text = string.Format("Доступно: {0:N2} грн.", kekvMoneyOnContracts);
+                if (kekvMoneyOnContracts > 0)
+                {
+                    label6.Visible = true;
+                    label6.Text = string.Format("З них зайнято договорами: {0:N2} грн.", kekvMoneyOnContracts);
+                }
 
-                mainKekv.DataSource = planRecord.PrimaryKekv;
-                altKekv.DataSource = planRecord.SecondaryKekv;
-                mainKekv.DisplayMember = altKekv.DisplayMember = "Code";
-                mainKekv.ValueMember = altKekv.ValueMember = "Id";
+                // Доступный остаток на КЕКВ
+                maxMoneyOnKekv -= moneyOnOtherRecords;
+                moneyRemainLabel.Text = string.Format("Вільні (нерозподілені) кошти: {0:N2} грн.", maxMoneyOnKekv);
+
+                estimatesCBList.DataSource = new List<Estimate> { planRecord.Estimate };
+                estimatesCBList.DisplayMember = "Name";
+                mainKekv.DataSource = new List<KekvRemain> { new KekvRemain { Kekv = planRecord.PrimaryKekv } };
+                altKekv.DataSource = new List<KekvRemain> { new KekvRemain { Kekv = planRecord.SecondaryKekv } };
+                mainKekv.DisplayMember = altKekv.DisplayMember = "Kekv";
+                dkCodesCBList.DataSource = new List<DkCode> { planRecord.Dk };
+                conctretePlanItemName.Text = planRecord.ConcreteName;
+                dkCodeSum.Value = planRecord.Sum;
 
                 // Устанавливаем допустимые границы измененния средств на коде
                 dkCodeSum.Minimum = kekvMoneyOnContracts;
-                dkCodeSum.Maximum = maxMoneyOnKekv;
+                dkCodeSum.Maximum = maxMoneyOnKekv + planRecord.Sum;
 
-                mainKekv.Enabled = altKekv.Enabled = dkCodesCBList.Enabled = false;
+                estimatesCBList.Enabled = mainKekv.Enabled = altKekv.Enabled = dkCodesCBList.Enabled = false;
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (estimatesCBList.SelectedItem == null)
+            {
+                NotificationHelper.ShowError("Ви не вибрали кошторис");
+                return;
+            }
+
+            if (mainKekv.SelectedItem == null)
+            {
+                NotificationHelper.ShowError("Ви не вибрали основний КЕКВ");
+                return;
+            }
+
+            if (altKekv.SelectedItem == null)
+            {
+                NotificationHelper.ShowError("Ви не вибрали старий КЕКВ");
+                return;
+            }
+
+            if (dkCodeSum.Value == 0)
+            {
+                NotificationHelper.ShowError("Сума повинна бути більша за 0");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(conctretePlanItemName.Text.Trim()))
+            {
+                NotificationHelper.ShowError("Ви не вказали конкретну назву предмету");
+                return;
+            }
+
+            if(dkCodesCBList.SelectedItem == null)
+            {
+                NotificationHelper.ShowError("Ви не вибрали код за ДК");
+                return;
+            }
+
             string msg = string.Empty;
             string actionDescriptionPrefix = string.Empty;
             if(planRecord != null)
             {
                 msg = "Вкажіть причину вказаної зміни коду";
-                actionDescriptionPrefix = "[ВВОД НОВОГО КОДУ В ПЛАН]";
+                actionDescriptionPrefix = "[ЗМІНА КОДУ]";
             }
             else
             {
                 msg = "Прокоментуйте створення коду (необов'язково)";
-                actionDescriptionPrefix = "[ЗМІНА КОДУ В ПЛАНІ]";
+                actionDescriptionPrefix = "[СТВОРЕННЯ КОДУ]";
             }
 
             ActionCommentForm af = new ActionCommentForm(msg);
@@ -156,25 +275,38 @@ namespace ZcrlTender
             // Для изменение кода указание причины необходимо
             if(planRecord != null && actionDescription == null)
             {
-                MyHelper.ShowError("Зміна коду без зазначення причини неможлива");
+                NotificationHelper.ShowError("Зміна коду без зазначення причини неможлива");
                 return;
             }
 
             // Если мы добавляем новый код в план - создаём его заготовку
             if(planRecord == null)
             {
+                Estimate selectedEstimate = estimatesCBList.SelectedItem as Estimate;
+                KekvCode selectedPrimaryKekv = (mainKekv.SelectedValue as KekvRemain).Kekv;
+                KekvCode selectedAltKekv = (altKekv.SelectedValue as KekvRemain).Kekv;
                 planRecord = new TenderPlanRecord();
+                planRecord.EstimateId = selectedEstimate.Id;
                 planRecord.DkCodeId = Convert.ToInt32(dkCodesCBList.SelectedValue);
-                planRecord.PrimaryKekvId = Convert.ToInt32(mainKekv.SelectedValue);
-                planRecord.SecondaryKekvId = Convert.ToInt32(altKekv.SelectedValue);
+                planRecord.PrimaryKekvId = selectedPrimaryKekv.Id;
+                planRecord.SecondaryKekvId = selectedAltKekv.Id;
+                planRecord.DateOfCreating = planRecord.DateOfLastChange = DateTime.Now;
             }
 
-            decimal changeOfSum = dkCodeSum.Value - planRecord.Sum;
+            decimal changeOfSum = dkCodeSum.Value;
             planRecord.Sum = dkCodeSum.Value;
             planRecord.ConcreteName = conctretePlanItemName.Text;
+            planRecord.DateOfLastChange = DateTime.Now;
             
             TenderPlanRecordChange tpChange = new TenderPlanRecordChange();
-            tpChange.Description = actionDescriptionPrefix + '\n' + actionDescription;
+            if (!string.IsNullOrWhiteSpace(actionDescription))
+            {
+                tpChange.Description = actionDescriptionPrefix + '\n' + actionDescription;
+            }
+            else
+            {
+                tpChange.Description = actionDescriptionPrefix;
+            }
             tpChange.DateOfChange = DateTime.Now;
             tpChange.TenderPlanRecordId = planRecord.Id;
             tpChange.ChangeOfSum = changeOfSum;
@@ -193,11 +325,21 @@ namespace ZcrlTender
                 }
                 tc.SaveChanges();
 
+                planRecord.Changes.Add(tpChange);
                 tc.TenderPlanRecordChanges.Add(tpChange);
                 tc.SaveChanges();
 
-                MyHelper.ShowInfo("Зміни до річного плану успішно внесено");
+                NotificationHelper.ShowInfo("Зміни до річного плану успішно внесено");
+                dbWasChanged = true;
                 Close();
+            }
+        }
+
+        private void estimatesCBList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(controlWasChangedByUser)
+            {
+                LoadKekvsOnEstimate(estimatesCBList.SelectedItem as Estimate);
             }
         }
     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TenderLibrary
 {
-    public class UploadedFile
+    public class UploadedFile : ICloneable
     {
         public long Id { get; set; }
         public string PhisicalName { get; set; }
@@ -41,5 +41,10 @@ namespace TenderLibrary
             return Id.GetHashCode();
         }
 
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BalanceChanges.cs" />
+    <Compile Include="ContactPerson.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="ContractChange.cs" />
     <Compile Include="Contractor.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="TenderPlanRecordChange.cs" />
     <Compile Include="TenderYear.cs" />
     <Compile Include="UploadedFile.cs" />
+    <Compile Include="User.cs" />
     <Compile Include="ZcrlTenderContext.cs" />
   </ItemGroup>
   <ItemGroup>

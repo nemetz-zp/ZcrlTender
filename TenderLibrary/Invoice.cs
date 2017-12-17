@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TenderLibrary
 {
-    public enum InvoiceStatus
+    public enum PaymentStatus
     {
         New,
         OnPayment,
@@ -36,25 +36,25 @@ namespace TenderLibrary
         // Общая сумма заказа
         public decimal Sum { get; set; }
 
-        public ICollection<BalanceChanges> Changes { get; set; }
+        public virtual ICollection<BalanceChanges> Changes { get; set; }
         public virtual ICollection<UploadedFile> RelatedFiles { get; set; }
 
         [NotMapped]
-        public InvoiceStatus Status
+        public PaymentStatus Status
         {
             get
             {
                 if(IsPaid)
                 {
-                    return InvoiceStatus.Payed;
+                    return PaymentStatus.Payed;
                 }
                 else if(Changes.Count > 0)
                 {
-                    return InvoiceStatus.OnPayment;
+                    return PaymentStatus.OnPayment;
                 }
                 else
                 {
-                    return InvoiceStatus.New;
+                    return PaymentStatus.New;
                 }
             }
         }

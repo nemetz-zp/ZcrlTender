@@ -39,7 +39,7 @@ namespace ZcrlTender
                 tc.SaveChanges();
                 yearWasAdded = true;
 
-                MyHelper.ShowInfo("Рік успішно додано!");
+                NotificationHelper.ShowInfo("Рік успішно додано!");
                 this.Close();
             }
         }

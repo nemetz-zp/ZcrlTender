@@ -13,6 +13,8 @@ namespace TenderLibrary
 
         public DateTime DateOfChange { get; set; }
 
+        public string Description { get; set; }
+
         public virtual Contract Contract { get; set; }
         public int ContractId { get; set; }
 

@@ -10,8 +10,10 @@ namespace ZcrlTender.ViewModels
     // Представление записи в таблице годового плана
     public class TenderPlanItemsTableEntry
     {
-        // ID записи о коде в плане
-        public int TenderPlanRecordId { get; set; }
+        public Estimate Estimate { get; set; }
+
+        // Запись о коде в плане
+        public TenderPlanRecord RelatedTenderPlanRecord { get; set; }
 
         // Позиция в плане 
         public DkCode Dk { get; set; }
@@ -25,7 +27,7 @@ namespace ZcrlTender.ViewModels
         // Деньги под которые зарегистрированы договора
         public decimal RegisteredByContracts { get; set; }
 
-        // Деньги потраченные по договорам (и соответственно те, которые нельзя уменьшить) 
+        // Деньги фактически потраченные по договорам (и соответственно те, которые нельзя уменьшить) 
         public decimal UsedByContracts { get; set; }
 
         // Остаток денег по договорам

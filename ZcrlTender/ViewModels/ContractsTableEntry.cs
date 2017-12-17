@@ -10,7 +10,7 @@ namespace ZcrlTender.ViewModels
     // Представление записи о договоре в таблице приложения
     public class ContractsTableEntry
     {
-        public int ContractId { get; set; }
+        public Contract RelatedContract { get; set; }
         public string ContractNum { get; set; }
         public DateTime ContractDate { get; set; }
         public string Description { get; set; }
@@ -18,7 +18,7 @@ namespace ZcrlTender.ViewModels
         public decimal FullSum { get; set; }
         public decimal UsedSum { get; set; }
         //public string Status { get; set; }
-        public decimal Remain
+        public decimal MoneyRemain
         {
             get
             {

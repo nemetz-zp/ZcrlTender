@@ -12,7 +12,7 @@ namespace ZcrlTender
     {
         static TenderContext()
         {
-            Database.SetInitializer<TenderContext>(new TenderDbInitializer());
+            //Database.SetInitializer<TenderContext>(new TenderDbInitializer());
         }
 
         public TenderContext() : base("Default") { }

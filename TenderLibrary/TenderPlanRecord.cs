@@ -31,6 +31,13 @@ namespace TenderLibrary
         // Конкретное название предмета закупки
         public string ConcreteName { get; set; }
 
+        public virtual ICollection<TenderPlanRecordChange> Changes { get; set; }
+
+        public TenderPlanRecord()
+        {
+            Changes = new List<TenderPlanRecordChange>();
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)

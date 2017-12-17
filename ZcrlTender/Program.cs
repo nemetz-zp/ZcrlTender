@@ -16,7 +16,35 @@ namespace ZcrlTender
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainProgramForm());
+
+            LoginForm lf = null;
+            Application.Run(lf = new LoginForm());
+
+            if(!lf.AuthorizationComplete)
+            {
+                return;
+            }
+
+            TenderYearForm tf = null;
+            Application.Run(tf = new TenderYearForm());
+
+            if (tf.SelectedYear == null)
+            {
+                return;
+            }
+            else
+            {
+                MainProgramForm.CurrentTenderYear = tf.SelectedYear;
+            }
+
+            try
+            {
+                Application.Run(new MainProgramForm());
+            }
+            catch(Exception ex)
+            {
+                NotificationHelper.ShowException(ex);
+            }
         }
     }
 }

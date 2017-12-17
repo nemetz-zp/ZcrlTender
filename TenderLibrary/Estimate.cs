@@ -21,16 +21,16 @@ namespace TenderLibrary
 
         public EstimateType Type { get; set; }
 
-        public string Description { get; set; }
-
         public virtual TenderYear Year { get; set; }
         public int TenderYearId { get; set; }
 
-        public ICollection<BalanceChanges> Changes { get; set; }
+        public virtual ICollection<BalanceChanges> Changes { get; set; }
+        public virtual ICollection<UploadedFile> RelatedFiles { get; set; }
 
         public Estimate()
         {
             Changes = new List<BalanceChanges>();
+            RelatedFiles = new List<UploadedFile>();
         }
 
         public override bool Equals(object obj)

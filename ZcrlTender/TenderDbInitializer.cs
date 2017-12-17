@@ -12,6 +12,8 @@ namespace ZcrlTender
     {
         protected override void Seed(ZcrlTenderContext context)
         {
+            UserSession.CreateUser("Адміністратор", "1234567", "Обліковий запис адміністратора системи");
+
             KekvCode k1 = new KekvCode { Code = "2110", Name = "Оплата праці" };
             KekvCode k2 = new KekvCode { Code = "2210", Name = "Предмети, матеріали, обладнання та інвентар" };
             KekvCode k3 = new KekvCode { Code = "2220", Name = "Медикаменти та перев'язувальні матеріали" };

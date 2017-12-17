@@ -8,7 +8,7 @@ using TenderLibrary;
 
 namespace ZcrlTender
 {
-    public class MyHelper
+    public class NotificationHelper
     {
         public static void ShowError(string msg)
         {

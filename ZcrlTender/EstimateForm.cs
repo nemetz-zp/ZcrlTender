@@ -23,17 +23,52 @@ namespace ZcrlTender
         private BindingList<MoneySource> sourcesList;
         private string[] monthes;
 
-        private List<EstimateCellRecord> estimatesRecords;
+        // Список связанных со сметой файлов
+        private BindingList<UploadedFile> relatedFiles;
+        // Список файлов на удаление
+        private List<UploadedFile> deletingFiles;
+
+        // Список поступлений средств по источникам
+        private List<EstimateMoneyOnSourceTable> estimateMoneyList;
+
+        // Список затрат, связанных со сметой, по источникам
+        private List<EstimateMoneyOnSourceTable> estimateSpendingList;
+
+        // Список запланированных годовым планом затрат по КЕКВ
+        private List<KekvMoneyRecord> plannedMoneyOnKekvs;
+        
+        // Пользователь произвёл изменения в БД
+        private bool wasDbChanged;
+        public bool WasDbChanged
+        {
+            get
+            {
+                return wasDbChanged;
+            }
+        }
 
         public EstimateForm(TenderYear year)
         {
-            InitializeComponent();
+            InitializeFormControls();
 
             currentEstimate = new Estimate();
             currentEstimate.Year = year;
             currentEstimate.TenderYearId = year.Id;
+        }
 
-            estimatesRecords = new List<EstimateCellRecord>();
+        private void InitializeFormControls()
+        {
+            InitializeComponent();
+
+            // Отключаем переключатель просмотра остатков по разным системам (оставляем доработку этого функционала в будущих версиях)
+            newSystemRButton.Visible = oldSystemRButton.Visible = false;
+
+            saveEstimateDataButton.Visible = UserSession.IsAuthorized;
+
+            wasDbChanged = false;
+
+            estimateMoneyList = new List<EstimateMoneyOnSourceTable>();
+            deletingFiles = new List<UploadedFile>();
 
             monthes = new string[] 
             { 
@@ -43,7 +78,7 @@ namespace ZcrlTender
                 "Жовтень",  "Листопад", "Грудень" 
             };
 
-            using(TenderContext tc = new TenderContext())
+            using (TenderContext tc = new TenderContext())
             {
                 kekvsList = tc.KekvCodes.ToList();
                 sourcesList = new BindingList<MoneySource>(tc.MoneySources.ToList());
@@ -53,51 +88,74 @@ namespace ZcrlTender
             moneySourceCBList.DisplayMember = "Name";
             moneySourceCBList.ValueMember = "Id";
 
-            DataGridViewHelper.DrawMoneyTotalsTableSchema<KekvCode, string>(estimateTotalsTable, 
+            filesTable.AutoGenerateColumns = false;
+
+            DataGridViewHelper.DrawMoneyTotalsTableSchema<KekvCode, string>(estimateTotalsTable,
                 kekvsList, monthes.ToList(), t => t.Code, t => t);
+            estimateTotalsTable.SortCompare += (sender, e) => DataGridViewHelper.SortCompareForMoneyTable(estimateTotalsTable, e);
 
             tableDataWasChangedByUser = false;
-            for(int i = 0; i < estimateTotalsTable.RowCount; i++)
+            for (int i = 0; i < estimateTotalsTable.RowCount; i++)
             {
-                for(int k = 0; k < estimateTotalsTable.ColumnCount; k++)
+                for (int k = 0; k < estimateTotalsTable.ColumnCount; k++)
                 {
                     estimateTotalsTable.Rows[i].Cells[k].Value = 0.00;
                 }
             }
             tableDataWasChangedByUser = true;
+
+            relatedFiles = new BindingList<UploadedFile>();
+            filesTable.DataSource = relatedFiles;
+            DataGridViewHelper.ConfigureFileTable(filesTable, relatedFiles, deletingFiles, linkLabel1, linkLabel2, linkLabel3);
         }
 
-        public EstimateForm(Estimate est) : this(est.Year)
+        public EstimateForm(Estimate est)
         {
+            InitializeFormControls();
+
+            if(!UserSession.IsAuthorized)
+            {
+                this.Text = "Перегляд даних кошторису";
+            }
+            else
+            {
+                this.Text = "Редагування даних кошторису";
+            }
+
             currentEstimate = est;
             estimateNameTextBox.Text = currentEstimate.Name;
 
             using(TenderContext tc = new TenderContext())
             {
-                var allEstimatesRecords = (from item in tc.BalanceChanges
-                                           where (item.EstimateId == currentEstimate.Id) && 
-                                                 (item.PlannedSpending == null && item.Invoice == null)
-                                           group item by item.MoneySource).ToList();
-                
-                foreach(var rec in allEstimatesRecords)
-                {
-                    EstimateCellRecord record = new EstimateCellRecord();
-                    record.Source = rec.Key;
-                    record.PrimarySumValues = new decimal[kekvsList.Count, monthes.Length];
-                    record.SecondarySumValues = new decimal[kekvsList.Count, monthes.Length];
-                    record.PrimarySumValues = new decimal[kekvsList.Count, monthes.Length];
-                    record.SecondarySumValues = new decimal[kekvsList.Count, monthes.Length];
-                    
-                    foreach(var item in rec)
-                    {
-                        int rowIndex = kekvsList.IndexOf(item.PrimaryKekv);
-                        int columnIndex = item.DateOfReceiving.Month - 1;
-                        record.PrimarySumValues[rowIndex, columnIndex] = item.PrimaryKekvSum;
-                        record.SecondarySumValues[rowIndex, columnIndex] = item.SecondaryKekvSum;
-                    }
+                tc.Estimates.Attach(currentEstimate);
+                tc.Entry<Estimate>(currentEstimate).Collection(p => p.RelatedFiles).Load();
 
-                    CreateMoneySourceTab(record);
-                }
+                relatedFiles.Clear();
+                foreach (var elem in currentEstimate.RelatedFiles)
+                    relatedFiles.Add(elem);
+
+                // Получаем все поступления по смете
+                EstimateMoneyOnSourceTable.GetEstimateMoneyTable(currentEstimate, 
+                                    kekvsList, 
+                                    monthes, 
+                                    p => (p.PlannedSpending == null && p.Invoice == null),
+                                    CreateMoneySourceTab);
+
+                // Получаем список затрат сметы
+                estimateSpendingList = EstimateMoneyOnSourceTable.GetEstimateMoneyTable(currentEstimate,
+                                    kekvsList,
+                                    monthes,
+                                    p => (p.PlannedSpending != null || p.Invoice != null));
+
+                // Получаем список запланированных трат по годовому плану по КЕКВ
+                plannedMoneyOnKekvs = (from plItem in tc.TenderPlanRecords.ToList()
+                                       where plItem.EstimateId == currentEstimate.Id
+                                       group plItem by plItem.PrimaryKekv into g1
+                                       select new KekvMoneyRecord
+                                       {
+                                           Kekv = g1.Key,
+                                           Sum = g1.Sum(p => p.Sum)
+                                       }).ToList();
             }
         }
 
@@ -109,6 +167,7 @@ namespace ZcrlTender
                 if(currentEstimate.Id > 0)
                 {
                     tc.Estimates.Attach(currentEstimate);
+                    tc.Entry<Estimate>(currentEstimate).State = System.Data.Entity.EntityState.Modified;
                     
                     // Удаляем старые записи сметы
                     var oldBalanceChanges = tc.BalanceChanges.Where(p => (p.EstimateId == currentEstimate.Id && p.PrimaryKekvSum >= 0 && p.SecondaryKekvSum >= 0));
@@ -123,25 +182,29 @@ namespace ZcrlTender
                     tc.SaveChanges();
                 }
 
-                for(int i = 0; i < estimatesRecords.Count; i++)
+                for(int i = 0; i < estimateMoneyList.Count; i++)
                 {
                     for(int j = 0; j < kekvsList.Count; j++)
                     {
                         for(int k = 0; k < monthes.Length; k++)
                         {
                             BalanceChanges incommingMoney = new BalanceChanges();
-                            incommingMoney.DateOfReceiving = new DateTime((int)currentEstimate.Year.Year, (k+1), 1);
+                            incommingMoney.DateOfReceiving = new DateTime((int)currentEstimate.Year.Year, (k+1), 1, 0, 0, 0);
                             incommingMoney.EstimateId = currentEstimate.Id;
-                            incommingMoney.MoneySourceId = estimatesRecords[i].Source.Id;
+                            incommingMoney.MoneySourceId = estimateMoneyList[i].Source.Id;
                             incommingMoney.PrimaryKekvId = incommingMoney.SecondaryKekvId = kekvsList[j].Id;
-                            incommingMoney.PrimaryKekvSum = estimatesRecords[i].PrimarySumValues[j, k];
-                            incommingMoney.SecondaryKekvSum = estimatesRecords[i].SecondarySumValues[j, k];
+                            incommingMoney.PrimaryKekvSum = estimateMoneyList[i].PrimarySumValues[j, k];
+                            incommingMoney.SecondaryKekvSum = estimateMoneyList[i].SecondarySumValues[j, k];
                             tc.BalanceChanges.Add(incommingMoney);
                         }
                     }
                 }
 
                 tc.SaveChanges();
+
+                FileManager.UpdateRelatedFilesOfEntity(tc, currentEstimate.RelatedFiles, relatedFiles, deletingFiles);
+
+                wasDbChanged = true;
             }
         }
 
@@ -163,6 +226,7 @@ namespace ZcrlTender
             dgv_copy.ColumnHeadersHeightSizeMode = dgv_orn.ColumnHeadersHeightSizeMode;
             dgv_copy.CellValueChanged += estimateTotalsTable_CellValueChanged;
             dgv_copy.CellValidating += estimateTotalsTable_CellValidating;
+            dgv_copy.SortCompare += (sender, e) => DataGridViewHelper.SortCompareForMoneyTable(dgv_copy, e);
 
             for(int i = 0; i < dgv_orn.ColumnCount; i++)
             {
@@ -210,7 +274,7 @@ namespace ZcrlTender
             MoneySource selectedItem = moneySourceCBList.SelectedItem as MoneySource;
 
             // Создаём вкладку под выбранный источник
-            CreateMoneySourceTab(new EstimateCellRecord 
+            CreateMoneySourceTab(new EstimateMoneyOnSourceTable 
             { 
                 Source = selectedItem,
                 PrimarySumValues = new decimal[kekvsList.Count, monthes.Length],
@@ -218,7 +282,7 @@ namespace ZcrlTender
             });
         }
 
-        private void CreateMoneySourceTab(EstimateCellRecord source)
+        private void CreateMoneySourceTab(EstimateMoneyOnSourceTable source)
         {
             // Создаём новую вкладку под источник с тем же форматированием, что и первой вкладки
             TabPage newTab = new TabPage();
@@ -227,6 +291,7 @@ namespace ZcrlTender
 
             DataGridView newDGV = CopyDataGridView(estimateTotalsTable);
             newTab.Controls.Add(newDGV);
+            tabControl1.TabPages.Add(newTab);
 
             tableDataWasChangedByUser = false;
             for (int i = 0; i < kekvsList.Count; i++)
@@ -245,9 +310,7 @@ namespace ZcrlTender
             }
             tableDataWasChangedByUser = true;
 
-            tabControl1.TabPages.Add(newTab);
-
-            estimatesRecords.Add(source);
+            estimateMoneyList.Add(source);
             sourcesList.Remove(source.Source);
             CheckPossibilityToAddMoneySources();
         }
@@ -255,14 +318,14 @@ namespace ZcrlTender
         private void CheckPossibilityToAddMoneySources()
         {
             addMoneySourceButton.Enabled = moneySourceCBList.Enabled = (sourcesList.Count > 0);
-            saveEstimateDataButton.Enabled = (estimatesRecords.Count > 0);
+            saveEstimateDataButton.Enabled = (estimateMoneyList.Count > 0);
         }
 
         private void deleteMoneySourceButton_Click(object sender, EventArgs e)
         {
             int selectedTabIndex = tabControl1.SelectedIndex;
-            sourcesList.Add(estimatesRecords[selectedTabIndex - 1].Source);
-            estimatesRecords.RemoveAt(selectedTabIndex - 1);
+            sourcesList.Add(estimateMoneyList[selectedTabIndex - 1].Source);
+            estimateMoneyList.RemoveAt(selectedTabIndex - 1);
             tabControl1.TabPages.RemoveAt(selectedTabIndex);
             CheckPossibilityToAddMoneySources();
             RecalculateTotals();
@@ -292,12 +355,12 @@ namespace ZcrlTender
                 {
                     if (newSystemRButton.Checked)
                     {
-                        estimatesRecords[tabControl1.SelectedIndex - 1].PrimarySumValues[e.RowIndex, e.ColumnIndex]
+                        estimateMoneyList[tabControl1.SelectedIndex - 1].PrimarySumValues[e.RowIndex, e.ColumnIndex]
                             = decimal.Parse(changedTable.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
                     }
                     else
                     {
-                        estimatesRecords[tabControl1.SelectedIndex - 1].SecondarySumValues[e.RowIndex, e.ColumnIndex]
+                        estimateMoneyList[tabControl1.SelectedIndex - 1].SecondarySumValues[e.RowIndex, e.ColumnIndex]
                             = decimal.Parse(changedTable.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString());
                     }
                 }
@@ -321,11 +384,11 @@ namespace ZcrlTender
                         tableDataWasChangedByUser = false;
                         if (newSystemRButton.Checked)
                         {
-                            dgv.Rows[j].Cells[k].Value = estimatesRecords[i - 1].PrimarySumValues[j, k];
+                            dgv.Rows[j].Cells[k].Value = estimateMoneyList[i - 1].PrimarySumValues[j, k];
                         }
                         else
                         {
-                            dgv.Rows[j].Cells[k].Value = estimatesRecords[i - 1].SecondarySumValues[j, k];
+                            dgv.Rows[j].Cells[k].Value = estimateMoneyList[i - 1].SecondarySumValues[j, k];
                         }
                         tableDataWasChangedByUser = true;
                     }
@@ -337,22 +400,55 @@ namespace ZcrlTender
         {
             if(string.IsNullOrWhiteSpace(estimateNameTextBox.Text))
             {
-                MyHelper.ShowError("Ви не вказали назву кошторису!");
+                NotificationHelper.ShowError("Ви не вказали назву кошторису!");
                 return;
             }
 
+            for (int i = 0; i < estimateMoneyList.Count; i++)
+            {
+                for (int j = 0; j < kekvsList.Count; j++)
+                {
+                    for (int k = 0; k < monthes.Length; k++)
+                    {
+                        if((estimateMoneyList[i].PrimarySumValues[j, k] < 0) || 
+                            (estimateMoneyList[i].SecondarySumValues[j, k] < 0))
+                        {
+                            NotificationHelper.ShowError("В кошторисі наявні суми менші за нуль!");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            string wrongRemainsMsg = null;
+
+            // Сверяем новые суммы сметы и запланированные траты в годовом плане по отдельным КЕКВ
+            wrongRemainsMsg = EstimateMoneyOnSourceTable.CheckPlannedKekvSum(estimateMoneyList, plannedMoneyOnKekvs, kekvsList, monthes);
+            if (wrongRemainsMsg != null)
+            {
+                NotificationHelper.ShowError(wrongRemainsMsg);
+                return;
+            }
+
+            // Сверяем новые суммы сметы и фактические траты по отдельным КЕКВ
+            wrongRemainsMsg = EstimateMoneyOnSourceTable.FindIncorrectSpending(estimateMoneyList, estimateSpendingList, kekvsList, monthes);
+            if(wrongRemainsMsg != null)
+            {
+                NotificationHelper.ShowError(wrongRemainsMsg);
+                return;
+            }
 
             WaitingForm wf = new WaitingForm("Іде збеження даних до бази ...", SaveDataToDb);
             wf.ShowDialog();
 
             if(!string.IsNullOrWhiteSpace(wf.Error))
             {
-                MyHelper.ShowError("Помилка! Деталі: " + wf.Error);
+                NotificationHelper.ShowError("Помилка! Деталі: " + wf.Error);
                 return;
             }
             else
             {
-                MyHelper.ShowInfo("Дані по кошторису успішно оновлені в базі даних!");
+                NotificationHelper.ShowInfo("Дані по кошторису успішно оновлені в базі даних!");
                 Close();
             }
         }

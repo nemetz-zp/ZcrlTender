@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace TenderLibrary
 {
+    // Статус договора
+    public enum ContractStatus
+    {
+        Active,     // Активный (в работе)
+        Complete    // Выполненый или расторгнутый
+    }
     // Договор
     public class Contract
     {
@@ -29,6 +36,22 @@ namespace TenderLibrary
         public string Number { get; set; }
         public decimal Sum { get; set; }
 
+        [NotMapped]
+        public string FullName
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Number))
+                {
+                    return Description;
+                }
+                else
+                {
+                    return string.Format("№ {0} від {1}", Number, SignDate.ToShortDateString());
+                }
+            }
+        }
+
         // Примечание (комментарий) к договору
         public string Description { get; set; }
 
@@ -41,6 +64,47 @@ namespace TenderLibrary
         public virtual ICollection<UploadedFile> RelatedFiles { get; set; }
         // Счёта взятые по договору
         public virtual ICollection<Invoice> Invoices { get; set; }
+        public virtual ICollection<ContractChange> ContractChanges { get; set; }
+
+        [NotMapped]
+        public ContractStatus Status
+        {
+            get
+            {
+                if(Sum == 0)
+                {
+                    return ContractStatus.Complete;
+                }
+                else if ((Invoices.Count > 0) && (Invoices.Sum(p => p.Sum) == Sum))
+                {
+                    return ContractStatus.Complete;
+                }
+                else
+                {
+                    return ContractStatus.Active;
+                }
+            }
+        }
+
+        // Использованные деньги
+        [NotMapped]
+        public decimal UsedMoney
+        {
+            get
+            {
+                return Invoices.Select(p => p.Sum).DefaultIfEmpty(0).Sum();
+            }
+        }
+
+        // Остаток средств на договоре
+        [NotMapped]
+        public decimal MoneyRemain
+        {
+            get
+            {
+                return Sum - UsedMoney;
+            }
+        }
 
         public Contract()
         {
@@ -62,6 +126,11 @@ namespace TenderLibrary
         public override int GetHashCode()
         {
             return Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return FullName.ToString();
         }
     }
 }

@@ -36,7 +36,7 @@ namespace ZcrlTender
         {
             if(string.IsNullOrWhiteSpace(textBox1.Text))
             {
-                MyHelper.ShowError("Ви не вказали опис дії для операції, що хочете виконати");
+                NotificationHelper.ShowError("Ви не вказали опис дії для операції, що хочете виконати");
                 return;
             }
             else

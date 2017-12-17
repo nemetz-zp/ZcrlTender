@@ -7,6 +7,7 @@ using TenderLibrary;
 
 namespace ZcrlTender.ViewModels
 {
+    // Запись в таблице списка смет
     public class EstimatesTableEntry
     {
         public Estimate Estimate { get; set; }

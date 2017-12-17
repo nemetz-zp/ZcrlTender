@@ -61,6 +61,46 @@ namespace ZcrlTender.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] contracts_spendings {
+            get {
+                object obj = ResourceManager.GetObject("contracts_spendings", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] estimate_month_spending_template {
+            get {
+                object obj = ResourceManager.GetObject("estimate_month_spending_template", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] full_estimate_template {
+            get {
+                object obj = ResourceManager.GetObject("full_estimate_template", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] full_yearplanbycontacts_template {
+            get {
+                object obj = ResourceManager.GetObject("full_yearplanbycontacts_template", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap loader {
@@ -77,6 +117,26 @@ namespace ZcrlTender.Properties {
             get {
                 object obj = ResourceManager.GetObject("loader_sm", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap login_img {
+            get {
+                object obj = ResourceManager.GetObject("login_img", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] yearplan_changes_history {
+            get {
+                object obj = ResourceManager.GetObject("yearplan_changes_history", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

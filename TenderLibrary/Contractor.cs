@@ -21,10 +21,22 @@ namespace TenderLibrary
         // Фактический адрес
         public string ActualAddress { get; set; }
 
-        // Контакты
-        public string ContactPhone { get; set; }
-        public string ContactPerson { get; set; }
-        public string Email { get; set; }
+        // Комментарий к контрагенту
+        public string Description { get; set; }
+
+        public virtual ICollection<UploadedFile> RelatedFiles { get; set; }
+        public virtual ICollection<ContactPerson> Persons { get; set; }
+
+        public Contractor()
+        {
+            RelatedFiles = new List<UploadedFile>();
+            Persons = new List<ContactPerson>();
+        }
+
+        public override string ToString()
+        {
+            return ShortName.ToString();
+        }
 
         public override bool Equals(object obj)
         {

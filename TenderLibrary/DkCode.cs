@@ -18,8 +18,13 @@ namespace TenderLibrary
         {
             get
             {
-                return Code + " - " + Name;
+                return Code + " " + Name;
             }
+        }
+
+        public override string ToString()
+        {
+            return FullName;
         }
 
         public override bool Equals(object obj)

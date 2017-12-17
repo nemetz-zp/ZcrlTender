@@ -58,13 +58,13 @@ namespace ZcrlTender
         {
             if(string.IsNullOrWhiteSpace(textBox1.Text))
             {
-                MyHelper.ShowError("Ви не вказали публічне ім'я файлу!");
+                NotificationHelper.ShowError("Ви не вказали публічне ім'я файлу!");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(textBox2.Text))
             {
-                MyHelper.ShowError("Ви не вибрали файл для завантаження!");
+                NotificationHelper.ShowError("Ви не вибрали файл для завантаження!");
                 return;
             }
 
@@ -75,6 +75,7 @@ namespace ZcrlTender
             }
 
             createdFile.PublicName = textBox1.Text.Trim();
+            createdFile.PublicName = FileManager.ClearIllegalFileNameSymbols(createdFile.PublicName);
             createdFile.PhisicalName = textBox2.Text;
 
             Close();

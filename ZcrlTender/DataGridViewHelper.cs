@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TenderLibrary;
 
 namespace ZcrlTender
 {
@@ -54,6 +56,7 @@ namespace ZcrlTender
                 newCol.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
                 newCol.ValueType = columnsType;
                 newCol.DefaultCellStyle.Format = columnFormat;
+                newCol.SortMode = DataGridViewColumnSortMode.NotSortable;
                 if (i < colNum)
                 {
                     newCol.HeaderText = columnPropertyName.Invoke(columns[i]).ToString();
@@ -78,12 +81,15 @@ namespace ZcrlTender
                 }
                 else
                 {
+                    newRow.Tag = "TOTALROW";
                     newRow.HeaderCell.Value = rowTotalsHeaderText;
                     newRow.DefaultCellStyle.Font = totalsFont;
                     newRow.ReadOnly = true;
                 }
                 table.Rows.Add(newRow);
             }
+
+            table.Refresh();
         }
 
         // Пересчёт номеров строк при удалении строки таблицы
@@ -107,6 +113,7 @@ namespace ZcrlTender
             }
         }
 
+        // Пересчёт итогов в таблице
         public static void RecalculateMoneyTotals(DataGridView table, int changedCellRowIndex, int changedCellColumnIndex)
         {
             int lastColumnIndex = table.ColumnCount - 1;
@@ -153,6 +160,119 @@ namespace ZcrlTender
                 table.Rows[lastRowIndex].Cells[lastColumnIndex].Value = totalSum;
                 table.Rows[lastRowIndex].Cells[lastColumnIndex].Style.ForeColor = (totalSum < 0) ? FormStyles.WrongSumColor : FormStyles.RightSumColor;
             }
+        }
+
+        public static void EnableFileTableButtons(DataGridView table, LinkLabel addLink, LinkLabel deleteLink, LinkLabel downloadLink)
+        {
+            deleteLink.Enabled = downloadLink.Enabled = (table.SelectedRows.Count > 0);
+        }
+
+        public static void AddFileRecord(DataGridView table, ICollection<UploadedFile> filesList)
+        {
+            AddEditFileForm ef = new AddEditFileForm();
+            ef.ShowDialog();
+
+            if (ef.CreatedFile != null)
+            {
+                filesList.Add(ef.CreatedFile);
+                table.Refresh();
+            }
+        }
+
+        // Редактирование записи о файле в таблице файлов
+        public static void EditFileRecord(DataGridView table, ICollection<UploadedFile> deletingFilesList)
+        {
+            UploadedFile selectedFile = table.SelectedRows[0].DataBoundItem as UploadedFile;
+            UploadedFile selectedFileCopy = selectedFile.Clone() as UploadedFile;
+            AddEditFileForm ef = new AddEditFileForm(selectedFile);
+            ef.ShowDialog();
+
+            // Если заменён файл - помещаем старый файл в список на удаление
+            if (FileManager.WasFileUploaded(selectedFileCopy) && (!selectedFileCopy.PhisicalName.Equals(ef.CreatedFile.PhisicalName)))
+            {
+                deletingFilesList.Add(new UploadedFile { PhisicalName = selectedFileCopy.PhisicalName });
+            }
+
+            table.Refresh();
+        }
+
+        public static void DeleteFileRecord(DataGridView table, IList<UploadedFile> filesList, ICollection<UploadedFile> deletingFilesList)
+        {
+            UploadedFile selectedFile = table.SelectedRows[0].DataBoundItem as UploadedFile;
+            int indexOfSelectedFile = table.SelectedRows[0].Index;
+            
+            if (FileManager.WasFileUploaded(selectedFile))
+            {
+                if (NotificationHelper.ShowYesNoQuestion("Ви впевнені що хочете видалити вказаний файл?"))
+                {
+                    deletingFilesList.Add(selectedFile);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            filesList.RemoveAt(indexOfSelectedFile);
+            RecalculateRowNumberColumn(table, 0, indexOfSelectedFile);
+            table.Refresh();
+        }
+
+        public static void ConfigureFileTable(DataGridView table, 
+            ICollection<UploadedFile> filesList,
+            ICollection<UploadedFile> deletingFilesList,
+            LinkLabel addLink, 
+            LinkLabel deleteLink, 
+            LinkLabel downloadLink)
+        {
+            table.AutoGenerateColumns = false;
+            table.SelectionChanged += (sender, e) => EnableFileTableButtons(table, addLink, deleteLink, downloadLink);
+
+            if (UserSession.IsAuthorized)
+            {
+                table.CellDoubleClick += (sender, e) => EditFileRecord(table, deletingFilesList);
+            }
+
+            table.RowsAdded += (sender, e) => CalculateNewRowNumber(table, 0, e.RowIndex, e.RowCount);
+            addLink.LinkClicked += (sender, e) => AddFileRecord(table, filesList);
+            deleteLink.LinkClicked += (sender, e) => DeleteFileRecord(table, filesList as IList<UploadedFile>, deletingFilesList);
+            downloadLink.LinkClicked += (sender, e) => FileManager.DownloadFile(table.SelectedRows[0].DataBoundItem as UploadedFile);
+
+            addLink.Visible = deleteLink.Visible = UserSession.IsAuthorized;
+        }
+
+        public static void SortCompareForMoneyTable(DataGridView table, DataGridViewSortCompareEventArgs e)
+        {
+            if (table.Rows[e.RowIndex1].Tag != null)
+            {
+                if (table.SortOrder == SortOrder.Ascending)
+                {
+                    e.SortResult = 1;
+                }
+                else
+                {
+                    e.SortResult = -1;
+                }
+            }
+            else if (table.Rows[e.RowIndex2].Tag != null)
+            {
+                if (table.SortOrder == SortOrder.Ascending)
+                {
+                    e.SortResult = -1;
+                }
+                else
+                {
+                    e.SortResult = 1;
+                }
+            }
+            else
+            {
+                decimal c1 = Convert.ToDecimal(e.CellValue1);
+                decimal c2 = Convert.ToDecimal(e.CellValue2);
+                e.SortResult = decimal.Compare(c1, c2);
+            }
+
+            e.Handled = true;
         }
     }
 }

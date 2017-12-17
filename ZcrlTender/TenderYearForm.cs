@@ -26,6 +26,8 @@ namespace ZcrlTender
         {
             InitializeComponent();
             ReloadListOfYears();
+
+            addYearButton.Visible = UserSession.IsAuthorized;
         }
 
         private void ReloadListOfYears()
