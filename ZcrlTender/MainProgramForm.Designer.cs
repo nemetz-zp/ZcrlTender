@@ -1775,6 +1775,7 @@
             this.tenderPlanTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.tenderPlanTable.Size = new System.Drawing.Size(857, 262);
             this.tenderPlanTable.TabIndex = 0;
+            this.tenderPlanTable.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.tenderPlanTable_DataBindingComplete);
             this.tenderPlanTable.SelectionChanged += new System.EventHandler(this.tenderPlanTable_SelectionChanged);
             // 
             // KekvColumn

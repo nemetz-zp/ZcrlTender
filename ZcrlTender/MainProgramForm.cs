@@ -886,16 +886,16 @@ namespace ZcrlTender
             {
                 tenderPlanItemsList = new BindingList<TenderPlanItemsTableEntry>(e.Result as List<TenderPlanItemsTableEntry>);
                 tenderPlanTable.DataSource = tenderPlanItemsList;
-                if (tenderPlanItemsList.Count > 2)
-                {
-                    tenderPlanTable.Rows[tenderPlanTable.RowCount - 1].DefaultCellStyle.Font = FormStyles.MoneyTotalsFont;
-                }
-                tenderPlanTable.Refresh();
 
                 linkLabel1.Visible = hasEstimateFreeMoney;
             }
 
             ToggleTenderPlanRecordsUpdateAnimation();
+        }
+
+        private void HighlightRow(DataGridViewRow dataGridViewRow)
+        {
+            dataGridViewRow.DefaultCellStyle.Font = FormStyles.MoneyTotalsFont;
         }
 
         private void updateContractsList_DoWork(object sender, DoWorkEventArgs e)
@@ -1689,6 +1689,15 @@ namespace ZcrlTender
                     NotificationHelper.ShowError(wf.Error);
                 }
             }
+        }
+
+        private void tenderPlanTable_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            if (tenderPlanItemsList.Count > 2)
+            {
+                HighlightRow(tenderPlanTable.Rows[tenderPlanTable.RowCount - 1]);
+            }
+            tenderPlanTable.Refresh();
         }
     }
 }
