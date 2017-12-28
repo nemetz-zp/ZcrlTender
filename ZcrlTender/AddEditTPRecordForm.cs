@@ -186,7 +186,7 @@ namespace ZcrlTender
 
                 // Деньги занятые договорами
                 decimal kekvMoneyOnContracts = (from rec in tc.Contracts.ToList()
-                                                where (rec.PrimaryKekvId == rec.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId)
+                                                where (rec.PrimaryKekvId == rec.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId) && (rec.DkCodeId == planRecord.DkCodeId)
                                                 group rec by rec.PrimaryKekvId into g1
                                                 select g1.Sum(p => p.Sum)).FirstOrDefault();
                 if (kekvMoneyOnContracts > 0)

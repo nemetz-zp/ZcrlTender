@@ -139,13 +139,24 @@ namespace ZcrlTender
                 {
                     tc.Contractors.Attach(contractorRecord);
                 }
+                else
+                {
+                    // Проверяем существует ли в базе контрагент с таким кодом ЕГРПОУ
+                    Contractor existingContractor = tc.Contractors.Where(p => p.EdrCode.Equals(edrTextBox.Text.Trim())).FirstOrDefault();
+                    
+                    if (existingContractor != null)
+                    {
+                        NotificationHelper.ShowError(string.Format("За даним кодом ЄДРПОУ вже зареєстрований контрагент '{0}'", existingContractor.ShortName));
+                        return;
+                    }
+                }
 
-                contractorRecord.LongName = fullNameTextBox.Text;
-                contractorRecord.ShortName = shortNameTextBox.Text;
-                contractorRecord.EdrCode = edrTextBox.Text;
-                contractorRecord.LegalAddress = legalAdressTextBox.Text;
-                contractorRecord.ActualAddress = actualAdressTextBox.Text;
-                contractorRecord.Description = descriptionTextBox.Text;
+                contractorRecord.LongName = fullNameTextBox.Text.Trim();
+                contractorRecord.ShortName = shortNameTextBox.Text.Trim();
+                contractorRecord.EdrCode = edrTextBox.Text.Trim();
+                contractorRecord.LegalAddress = legalAdressTextBox.Text.Trim();
+                contractorRecord.ActualAddress = actualAdressTextBox.Text.Trim();
+                contractorRecord.Description = descriptionTextBox.Text.Trim();
 
                 if(contractorRecord.Id == 0)
                 {

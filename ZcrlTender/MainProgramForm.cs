@@ -320,7 +320,9 @@ namespace ZcrlTender
                 int selectedContractorInInvGroup = Convert.ToInt32(invContractorCBList.SelectedValue);
                 if (selectedContractorInInvGroup > 0)
                 {
-                    contractsForCBList = new BindingList<Contract>(tc.Contracts.Where(p => p.ContractorId == selectedContractorInInvGroup).ToList());
+                    contractsForCBList = new BindingList<Contract>(tc.Contracts
+                        .Where(p => (p.ContractorId == selectedContractorInInvGroup) && (p.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id))
+                        .ToList());
                 }
                 else
                 {
@@ -429,6 +431,7 @@ namespace ZcrlTender
             }
         }
 
+        // Загрузка таблицы списка смет в текущем году
         public void LoadEstimatesTable()
         {
             using(TenderContext tc = new TenderContext())
@@ -911,7 +914,7 @@ namespace ZcrlTender
                         return;
                     }
 
-                    List<Contract> allContracts = tc.Contracts.Where(p =>
+                    List<Contract> allContracts = tc.Contracts.Where(p => (p.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id) &&
                         ((p.SignDate >= contStartDatePicker.Value) && (p.SignDate <= contEndDatePicker.Value))).ToList();
 
                     if(filter.Estimate.Id > 0)
@@ -992,8 +995,10 @@ namespace ZcrlTender
                 {
                     InvoiceRecordsFilter filter = e.Argument as InvoiceRecordsFilter;
                     int selectedEstimateId = filter.EstimateId;
-                    List<Invoice> allInvoices = tc.Invoices.ToList().Where(p => ((p.Date >= invStartDatePicker.Value) 
-                        && (p.Date <= invEndDatePicker.Value))).ToList();
+                    List<Invoice> allInvoices = tc.Invoices.Where(p => p.Contract.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id)
+                        .ToList()
+                        .Where(p => ((p.Date >= invStartDatePicker.Value) && (p.Date <= invEndDatePicker.Value)))
+                        .ToList();
 
                     if(selectedEstimateId > 0)
                     {
