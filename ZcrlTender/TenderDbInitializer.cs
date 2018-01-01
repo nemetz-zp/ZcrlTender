@@ -8,7 +8,7 @@ using TenderLibrary;
 
 namespace ZcrlTender
 {
-    public class TenderDbInitializer : DropCreateDatabaseAlways<ZcrlTenderContext>
+    public class TenderDbInitializer : CreateDatabaseIfNotExists<ZcrlTenderContext>
     {
         protected override void Seed(ZcrlTenderContext context)
         {
@@ -37,11 +37,6 @@ namespace ZcrlTender
             context.KekvCodes.Add(k9);
             context.KekvCodes.Add(k10);
             context.KekvCodes.Add(k11);
-            context.SaveChanges();
-
-            TenderYear y1 = new TenderYear { Year = 2017, Description = "" };
-
-            context.TenderYears.Add(y1);
             context.SaveChanges();
 
             MoneySource ms1 = new MoneySource { Name = "Місцевий бюджет" };
