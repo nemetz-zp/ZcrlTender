@@ -41,15 +41,29 @@ namespace ZcrlTender.ExcelReports
             this.isNewSystem = isNewSystem;
         }
 
-        public override void MakeReport()
+        protected override string SaveReportFile
+        {
+            get 
+            {
+                return string.Format("Історія змін річного плану на {0} рік", year.Year); 
+            }
+        }
+
+        protected override string TemplateFile
+        {
+            get 
+            {
+                return FileManager.YearPlanChangesHistoryTemplateFile; 
+            }
+        }
+
+        protected override void WriteDataToFile()
         {
             List<TenderPlanItemsTableEntry> planRecords = null;
 
             List<TenderPlanRecord> allPlanRecords = null;
 
-            OpenExcelFile(FileManager.YearPlanChangesHistoryTemplateFile);
-
-            string freeCellLetter = GetNextColumnLettter(plannedMoneyColumnLetter);
+            string freeCellLetter = GetNextColumnLetter(plannedMoneyColumnLetter);
             xlWorksheet.get_Range(freeCellLetter + currentRowNumber).ColumnWidth =
                 xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber).ColumnWidth + xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber).ColumnWidth;
 
@@ -219,11 +233,6 @@ namespace ZcrlTender.ExcelReports
                     DrawTableBorders(numColumnLetter + (beginRowNumber - 1).ToString(), plannedMoneyColumnLetter + currentRowNumber.ToString());
                 }
             }
-
-            xlWorksheet.SaveAs(System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
-                FileManager.ClearIllegalFileNameSymbols(string.Format("Історія змін річного плану на {0} рік", year.Year))));
-
-            TerminateExcelProcessInstance();
         }
     }
 }

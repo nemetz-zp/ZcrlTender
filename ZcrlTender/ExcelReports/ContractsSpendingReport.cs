@@ -35,6 +35,22 @@ namespace ZcrlTender.ExcelReports
         private int beginRowNumber = 8;
         private int currentRowNumber = 8;
 
+        protected override string TemplateFile
+        {
+            get 
+            {
+                return FileManager.ContractSpendingTemplateFile; 
+            }
+        }
+
+        protected override string SaveReportFile
+        {
+            get 
+            {
+                return string.Format("Звіт по витратам за договорами за {0} рік", year.Year); 
+            }
+        }
+
         private void LoadMoneySourceList()
         {
             using(TenderContext tc = new TenderContext())
@@ -73,10 +89,8 @@ namespace ZcrlTender.ExcelReports
             public List<Contract> Contracts { get; set; }
         }
 
-        public override void MakeReport()
+        protected override void WriteDataToFile()
         {
-            OpenExcelFile(FileManager.ContractSpendingTemplateFile);
-
             using (TenderContext tc = new TenderContext())
             {
                 string estimateName = string.Empty;
@@ -104,11 +118,11 @@ namespace ZcrlTender.ExcelReports
 
                     if (i == (sourcesNum - 1))
                     {
-                        totalMoneySourceColumnLetter = GetNextColumnLettter(lastMoneySourceColumnLetter);
+                        totalMoneySourceColumnLetter = GetNextColumnLetter(lastMoneySourceColumnLetter);
                     }
                     else
                     {
-                        lastMoneySourceColumnLetter = GetNextColumnLettter(lastMoneySourceColumnLetter);
+                        lastMoneySourceColumnLetter = GetNextColumnLetter(lastMoneySourceColumnLetter);
                     }
                 }
                 xlWorksheet.get_Range(totalMoneySourceColumnLetter + beginRowNumber.ToString()).Font.Bold = true;
@@ -117,7 +131,7 @@ namespace ZcrlTender.ExcelReports
                     totalMoneySourceColumnLetter + (beginRowNumber - 1).ToString()).Merge();
 
                 // Столбец с остатком по договору
-                contractRemainColumnLetter = GetNextColumnLettter(totalMoneySourceColumnLetter);
+                contractRemainColumnLetter = GetNextColumnLetter(totalMoneySourceColumnLetter);
                 xlWorksheet.get_Range(contractRemainColumnLetter + (beginRowNumber - 1).ToString(),
                     contractRemainColumnLetter + beginRowNumber.ToString()).Merge();
                 xlWorksheet.get_Range(contractRemainColumnLetter + (beginRowNumber - 1).ToString()).Font.Bold = true;
@@ -168,8 +182,13 @@ namespace ZcrlTender.ExcelReports
                             contractRemainColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = (contractNum + 1).ToString();
                         xlWorksheet.get_Range(contractorColumnLetter + currentRowNumber.ToString()).Value = contract.Contractor.ShortName;
-                        xlWorksheet.get_Range(contractColumnLetter + currentRowNumber.ToString()).Value = 
-                            string.Format("{0}\n{1}", contract.FullName, contract.Description);
+
+                        string contractName = contract.FullName;
+                        if (!string.IsNullOrWhiteSpace(contract.Description))
+                        {
+                            contractName += string.Format(",\n{0}", contract.Description);
+                        }
+                        xlWorksheet.get_Range(contractColumnLetter + currentRowNumber.ToString()).Value = contractName;
                         xlWorksheet.get_Range(contractSumColumnLetter + currentRowNumber.ToString()).Value = contract.Sum;
 
                         int firstInvoiceRowIndex = currentRowNumber + 1;
@@ -178,8 +197,12 @@ namespace ZcrlTender.ExcelReports
                             currentRowNumber++;
                             xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
                                 contractRemainColumnLetter + currentRowNumber.ToString()).Font.Size = 11;
-                            xlWorksheet.get_Range(contractColumnLetter + currentRowNumber.ToString()).Value = 
-                                string.Format("Рахунок/Акт № {0} від {1} року\n({2})", invoice.Number, invoice.Date, invoice.Description);
+                            string invoiceName = string.Format("Рахунок/Акт № {0} від {1} року", invoice.Number, invoice.Date);
+                            if(!string.IsNullOrWhiteSpace(invoice.Description))
+                            {
+                                invoiceName += string.Format(",\n({0})", invoice.Description);
+                            }
+                            xlWorksheet.get_Range(contractColumnLetter + currentRowNumber.ToString()).Value = invoiceName;
                             decimal[] spending = null;
                             if (isNewSystem)
                             {
@@ -204,7 +227,7 @@ namespace ZcrlTender.ExcelReports
                             foreach(var sum in spending)
                             {
                                 xlWorksheet.get_Range(currentSourceColumnLetter + currentRowNumber.ToString()).Value = sum;
-                                currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                                currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                             }
                             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Formula
@@ -218,7 +241,7 @@ namespace ZcrlTender.ExcelReports
                             {
                                 xlWorksheet.get_Range(currentSourceColumnLetter + currentContractRowIndex.ToString()).Formula = 
                                     string.Format("=SUM({0}{1}:{0}{2})", currentSourceColumnLetter, firstInvoiceRowIndex, currentRowNumber);
-                                currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                                currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                             }
                         }
                         else
@@ -227,7 +250,7 @@ namespace ZcrlTender.ExcelReports
                             for (int i = 0; i < sourcesNum; i++)
                             {
                                 xlWorksheet.get_Range(currentSourceColumnLetter + currentContractRowIndex.ToString()).Value = 0;
-                                currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                                currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                             }
                         }
                         xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentContractRowIndex.ToString()).Font.Bold = true;
@@ -286,11 +309,6 @@ namespace ZcrlTender.ExcelReports
                 xlWorksheet.get_Range(numColumnLetter + estimateNameCell, contractRemainColumnLetter + estimateNameCell).Merge();
                 xlWorksheet.get_Range(numColumnLetter + dateCell, contractRemainColumnLetter + dateCell).Merge();
             }
-
-            xlWorksheet.SaveAs(System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
-                FileManager.ClearIllegalFileNameSymbols(string.Format("Звіт по витратам за договорами за {0} рік", year.Year))));
-
-            TerminateExcelProcessInstance();
         }
 
         private void WriteTotalsInCurrentRow(string totalFormula)
@@ -306,7 +324,7 @@ namespace ZcrlTender.ExcelReports
             {
                 xlWorksheet.get_Range(currentSourceColumnLetter + currentRowNumber.ToString()).Formula =
                     string.Format(totalFormula, currentSourceColumnLetter);
-                currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
             }
             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Formula =
                 string.Format("=SUM({1}{0}:{2}{0})", currentRowNumber, firstMoneySourceColumnLetter, lastMoneySourceColumnLetter);

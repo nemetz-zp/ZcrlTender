@@ -121,6 +121,9 @@
   <data name="contracts_spendings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\contracts_spendings.xls;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="current_remains_and_new_invoices" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\current_remains_and_new_invoices.xls;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="estimate_month_spending_template" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\estimate_month_spending_template.xls;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

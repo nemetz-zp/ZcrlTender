@@ -139,6 +139,7 @@
       <DependentUpon>EstimateFreeMoneyForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ExcelReports\ContractsSpendingReport.cs" />
+    <Compile Include="ExcelReports\CurrentMoneyRemainsAndNewInvoicesReport.cs" />
     <Compile Include="ExcelReports\EstimateYearMoneyReport.cs" />
     <Compile Include="ExcelReports\EstimateYearSpendingReport.cs" />
     <Compile Include="ExcelReports\ExcelReportMaker.cs" />
@@ -284,6 +285,7 @@
       <DependentUpon>WaitingForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="contracts_spendings.xls" />
+    <None Include="current_remains_and_new_invoices.xls" />
     <None Include="estimate_month_spending_template.xls" />
     <None Include="full_estimate_template.xls" />
     <None Include="full_yearplanbycontacts_template.xls" />

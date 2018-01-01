@@ -224,6 +224,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.moneyRemainsloadingPicture = new System.Windows.Forms.PictureBox();
             this.оПрограміToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.currentRemainReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsTable)).BeginInit();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plannedSpendingLoadingPicture)).BeginInit();
@@ -2037,7 +2038,8 @@
             this.estimateWithBalanceChangesMenuItem,
             this.yearPlanWithContractsMenuItem,
             this.yearPlanWithChangesMenuItem,
-            this.contractsReportMenuItem});
+            this.contractsReportMenuItem,
+            this.currentRemainReportMenuItem});
             this.звітністьToolStripMenuItem.Name = "звітністьToolStripMenuItem";
             this.звітністьToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.звітністьToolStripMenuItem.Text = "Звітність";
@@ -2045,28 +2047,28 @@
             // estimateWithBalanceChangesMenuItem
             // 
             this.estimateWithBalanceChangesMenuItem.Name = "estimateWithBalanceChangesMenuItem";
-            this.estimateWithBalanceChangesMenuItem.Size = new System.Drawing.Size(318, 22);
+            this.estimateWithBalanceChangesMenuItem.Size = new System.Drawing.Size(357, 22);
             this.estimateWithBalanceChangesMenuItem.Text = "Звіт по фактичним витратам кошторисів";
             this.estimateWithBalanceChangesMenuItem.Click += new System.EventHandler(this.estimateWithBalanceChangesMenuItem_Click);
             // 
             // yearPlanWithContractsMenuItem
             // 
             this.yearPlanWithContractsMenuItem.Name = "yearPlanWithContractsMenuItem";
-            this.yearPlanWithContractsMenuItem.Size = new System.Drawing.Size(318, 22);
+            this.yearPlanWithContractsMenuItem.Size = new System.Drawing.Size(357, 22);
             this.yearPlanWithContractsMenuItem.Text = "Річний план з юридичними зобов\'язаннями";
             this.yearPlanWithContractsMenuItem.Click += new System.EventHandler(this.yearPlanWithContractsMenuItem_Click);
             // 
             // yearPlanWithChangesMenuItem
             // 
             this.yearPlanWithChangesMenuItem.Name = "yearPlanWithChangesMenuItem";
-            this.yearPlanWithChangesMenuItem.Size = new System.Drawing.Size(318, 22);
+            this.yearPlanWithChangesMenuItem.Size = new System.Drawing.Size(357, 22);
             this.yearPlanWithChangesMenuItem.Text = "Річний план з переліком змін по кодах";
             this.yearPlanWithChangesMenuItem.Click += new System.EventHandler(this.yearPlanWithChangesMenuItem_Click);
             // 
             // contractsReportMenuItem
             // 
             this.contractsReportMenuItem.Name = "contractsReportMenuItem";
-            this.contractsReportMenuItem.Size = new System.Drawing.Size(318, 22);
+            this.contractsReportMenuItem.Size = new System.Drawing.Size(357, 22);
             this.contractsReportMenuItem.Text = "Звіт по договорам";
             this.contractsReportMenuItem.Click += new System.EventHandler(this.contractsReportMenuItem_Click);
             // 
@@ -2104,6 +2106,13 @@
             this.оПрограміToolStripMenuItem.Name = "оПрограміToolStripMenuItem";
             this.оПрограміToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             this.оПрограміToolStripMenuItem.Text = "О програмі";
+            // 
+            // currentRemainReportMenuItem
+            // 
+            this.currentRemainReportMenuItem.Name = "currentRemainReportMenuItem";
+            this.currentRemainReportMenuItem.Size = new System.Drawing.Size(357, 22);
+            this.currentRemainReportMenuItem.Text = "Звіт по поточним залишкам та рахункам на оплату";
+            this.currentRemainReportMenuItem.Click += new System.EventHandler(this.currentRemainReportMenuItem_Click);
             // 
             // MainProgramForm
             // 
@@ -2315,6 +2324,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.ToolStripMenuItem changePasswordMenuItem;
         private System.Windows.Forms.ToolStripMenuItem contractsReportMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem currentRemainReportMenuItem;
     }
 }
 

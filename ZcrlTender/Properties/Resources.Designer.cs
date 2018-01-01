@@ -73,6 +73,16 @@ namespace ZcrlTender.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] current_remains_and_new_invoices {
+            get {
+                object obj = ResourceManager.GetObject("current_remains_and_new_invoices", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] estimate_month_spending_template {
             get {
                 object obj = ResourceManager.GetObject("estimate_month_spending_template", resourceCulture);

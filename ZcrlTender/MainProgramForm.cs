@@ -94,11 +94,6 @@ namespace ZcrlTender
                 invoicesTable.AutoGenerateColumns = 
                 spendingTable.AutoGenerateColumns = false;
 
-            contStartDatePicker.Value = 
-                contEndDatePicker.Value = 
-                invStartDatePicker.Value = 
-                invEndDatePicker.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-
             loadingIndicator = new object();
 
             this.Text = "Тендерні закупівлі :: " + currentTenderYear.Year + " рік";
@@ -1703,6 +1698,22 @@ namespace ZcrlTender
                 HighlightRow(tenderPlanTable.Rows[tenderPlanTable.RowCount - 1]);
             }
             tenderPlanTable.Refresh();
+        }
+
+        private void currentRemainReportMenuItem_Click(object sender, EventArgs e)
+        {
+            CurrentMoneyRemainsAndNewInvoicesReport report = new CurrentMoneyRemainsAndNewInvoicesReport(MainProgramForm.CurrentTenderYear);
+            WaitingForm wf = new WaitingForm("Формування звіту", () => report.MakeReport());
+            wf.ShowDialog();
+
+            if (string.IsNullOrWhiteSpace(wf.Error))
+            {
+                NotificationHelper.ShowInfo("Звіт успішно збережено у директорію \"Мої документи\"!");
+            }
+            else
+            {
+                NotificationHelper.ShowError(wf.Error);
+            }
         }
     }
 }

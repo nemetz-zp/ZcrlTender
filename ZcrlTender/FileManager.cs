@@ -95,6 +95,17 @@ namespace ZcrlTender
                     fs.Close();
                 }
             }
+
+            // Проверяем наличие файла-шаблона отчёта по текущим остаткам и новым счетам
+            if (!File.Exists(CurrentMoneyRemainAndNewInvoicesTemplate))
+            {
+                byte[] templateBytes = Properties.Resources.current_remains_and_new_invoices;
+                using (FileStream fs = new FileStream(CurrentMoneyRemainAndNewInvoicesTemplate, FileMode.Create))
+                {
+                    fs.Write(templateBytes, 0, templateBytes.Length);
+                    fs.Close();
+                }
+            }
         }
 
         // Путь к каталогу с шаблонами
@@ -154,6 +165,15 @@ namespace ZcrlTender
             get
             {
                 return System.IO.Path.Combine(FileManager.TemplateFilesDir, "yearplan_changes_history.xls");
+            }
+        }
+
+        // Путь к файлу-шаблону отчёта по текущим остаткам и новым счетам
+        public static string CurrentMoneyRemainAndNewInvoicesTemplate
+        {
+            get
+            {
+                return System.IO.Path.Combine(FileManager.TemplateFilesDir, "current_remains_and_new_invoices.xls");
             }
         }
 

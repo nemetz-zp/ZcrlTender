@@ -8,6 +8,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ZcrlTender.ExcelReports
 {
+    // Отчёт по поступлениям средств на год по смете 
     public class EstimateYearMoneyReport : ExcelReportMaker
     {
         private Estimate est;
@@ -18,13 +19,29 @@ namespace ZcrlTender.ExcelReports
         private string estimateNameCell = "A4";
         private int startRowNumber = 8;
         private int currentRowNumber = 8;
-        private string[] monthColumnLetters = { "B", "C", "D",
+        private string[] monthColumnLetters = { 
+                                                "B", "C", "D",
                                                 "E", "F", "G",
                                                 "H", "I", "J",
                                                 "K", "L", "M"
                                               };
         private List<int> headersList = new List<int>();
 
+        protected override string TemplateFile
+        {
+            get 
+            {
+                return FileManager.FullEstimateTemplateFile; 
+            }
+        }
+
+        protected override string SaveReportFile
+        {
+            get 
+            {
+                return est.Name; 
+            }
+        }
 
         public EstimateYearMoneyReport(Estimate est)
         {
@@ -32,11 +49,9 @@ namespace ZcrlTender.ExcelReports
         }
 
         // Отчёт по годовым поступлениям по смете
-        public override void MakeReport()
+        protected override void WriteDataToFile()
         {
-            Dictionary<KekvCode, decimal[]> EstimateKekvTotals = new Dictionary<KekvCode, decimal[]>();
-
-            OpenExcelFile(FileManager.FullEstimateTemplateFile);
+            Dictionary<KekvCode, List<string>> EstimateKekvTotals = new Dictionary<KekvCode, List<string>>();
 
             using (TenderContext tc = new TenderContext())
             {
@@ -71,7 +86,7 @@ namespace ZcrlTender.ExcelReports
 
                     currentRowNumber++;
                     int firstKekvRowNumber = currentRowNumber;
-                    foreach (var kekv in source)
+                    foreach (var kekv in source.OrderBy(p => p.Key.Code))
                     {
                         xlWorksheet.get_Range(kekvColumnLetter + currentRowNumber.ToString()).Value = kekv.Key.Code;
 
@@ -84,13 +99,13 @@ namespace ZcrlTender.ExcelReports
 
                         if (!EstimateKekvTotals.ContainsKey(kekv.Key))
                         {
-                            EstimateKekvTotals.Add(kekv.Key, new decimal[12]);
+                            EstimateKekvTotals.Add(kekv.Key, new List<string>());
                         }
+                        EstimateKekvTotals[kekv.Key].Add("{0}" + currentRowNumber);
 
                         for (int i = 0; i < monthesRemain.Length; i++)
                         {
                             xlWorksheet.get_Range(monthColumnLetters[i] + currentRowNumber.ToString()).Value = monthesRemain[i];
-                            EstimateKekvTotals[kekv.Key][i] += monthesRemain[i];
                         }
 
                         // Годовой итог по КЕКВ
@@ -132,17 +147,18 @@ namespace ZcrlTender.ExcelReports
                 currentRowNumber++;
 
                 int totalKekvRowIndex = currentRowNumber;
-                foreach (var kekv in EstimateKekvTotals)
+                foreach (var kekv in EstimateKekvTotals.OrderBy(p => p.Key.Code))
                 {
                     xlWorksheet.get_Range(kekvColumnLetter + currentRowNumber.ToString()).Value = kekv.Key.Code;
                     xlWorksheet.get_Range(kekvColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                     xlWorksheet.get_Range(kekvColumnLetter + currentRowNumber.ToString()).HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
-                    int monthCount = kekv.Value.Count();
-                    for (int i = 0; i < monthCount; i++)
+                    string formulaString = "=SUM(" + string.Join(",", kekv.Value) + ")";
+                    for (int i = 0; i < monthColumnLetters.Length; i++)
                     {
                         xlWorksheet.get_Range(monthColumnLetters[i] + currentRowNumber.ToString()).Font.Bold = true;
-                        xlWorksheet.get_Range(monthColumnLetters[i] + currentRowNumber.ToString()).Value = kekv.Value[i];
+                        xlWorksheet.get_Range(monthColumnLetters[i] + currentRowNumber.ToString()).Formula =
+                            string.Format(formulaString, monthColumnLetters[i]);
                     }
 
                     // Годовой итог по КЕКВ
@@ -177,11 +193,6 @@ namespace ZcrlTender.ExcelReports
             {
                 DrawTableBorders(kekvColumnLetter + header.ToString(), yearTotalColumnLetter + header.ToString());
             }
-
-            xlWorkbook.SaveAs(System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
-                FileManager.ClearIllegalFileNameSymbols(est.Name)));
-
-            TerminateExcelProcessInstance();
         }
     }
 }

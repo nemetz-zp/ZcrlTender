@@ -44,7 +44,23 @@ namespace ZcrlTender.ExcelReports
             this.isNewSystem = isNewSystem;
         }
 
-        public override void MakeReport()
+        protected override string TemplateFile
+        {
+            get 
+            {
+                return FileManager.YearPlanTemplateFile; 
+            }
+        }
+
+        protected override string SaveReportFile
+        {
+            get 
+            {
+                return string.Format("Річний план на {0} рік", year.Year);
+            }
+        }
+
+        protected override void WriteDataToFile()
         {
             List<TenderPlanItemsTableEntry> planRecords = null;
             List<TenderPlanItemsTableEntry> contractsMoney = null;
@@ -52,8 +68,6 @@ namespace ZcrlTender.ExcelReports
 
             List<TenderPlanRecord> allPlanRecords = null;
             List<Contract> allContracts = null;
-
-            OpenExcelFile(FileManager.YearPlanTemplateFile);
 
             using(TenderContext tc = new TenderContext())
             {
@@ -204,8 +218,15 @@ namespace ZcrlTender.ExcelReports
                         foreach(var contract in contractsOnCode)
                         {
                             currentRowNumber++;
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = 
-                                string.Format("Договір {0}\n({1})\n{2}", contract.FullName, contract.Description, contract.Contractor.ShortName);
+
+                            string contractDescription = string.Empty;
+                            if(!string.IsNullOrWhiteSpace(contract.Description))
+                            {
+                                contractDescription = string.Format("\n({0}),", contract.Description);
+                            }
+                            string contractName = string.Format("Договір {0},{1}\n{2}", contract.FullName, contractDescription, contract.Contractor.ShortName);
+
+                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = contractName;
                             xlWorksheet.get_Range(registedByContractsMoneyColumnLetter + currentRowNumber.ToString()).Value = contract.Sum;
                             xlWorksheet.get_Range(usedByContractsMoneyColumnLetter + currentRowNumber.ToString()).Value = contract.UsedMoney;
                             xlWorksheet.get_Range(contractRemainColumnLetter + currentRowNumber.ToString()).Value = contract.MoneyRemain;
@@ -305,11 +326,6 @@ namespace ZcrlTender.ExcelReports
                     DrawTableBorders(numColumnLetter + (beginRowNumber - 1).ToString(), dkCodeRemainColumnLetter + currentRowNumber.ToString());
                 }
             }
-
-            xlWorksheet.SaveAs(System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
-                FileManager.ClearIllegalFileNameSymbols(string.Format("Річний план на {0} рік", year.Year))));
-
-            TerminateExcelProcessInstance();
         }
     }
 }

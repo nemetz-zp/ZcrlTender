@@ -103,6 +103,7 @@ namespace ZcrlTender
                 new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0).AddYears(Convert.ToInt32(year.Year) - DateTime.Now.Year);
             dateOfSigning.MinDate = dateOfStart.MinDate = dateOfEnd.MinDate = new DateTime(Convert.ToInt32(year.Year), 1, 1, 0, 0, 0);
             dateOfSigning.MaxDate = dateOfStart.MaxDate = dateOfEnd.MaxDate = new DateTime(Convert.ToInt32(year.Year), 12, 31, 0, 0, 0);
+            dateOfEnd.Value = new DateTime(Convert.ToInt32(year.Year), 12, 31, 0, 0, 0);
 
             hiddenPagesList = new List<TabPage>();
 
@@ -111,9 +112,6 @@ namespace ZcrlTender
             mainKekv.ValueMember = altKekv.ValueMember = "Id";
             mainKekv.DisplayMember = altKekv.DisplayMember = "Code";
             dkCode.DisplayMember = "Dk";
-
-            dateOfSigning.Value = dateOfStart.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            dateOfEnd.Value = new DateTime(DateTime.Now.Year, 12, 31);
 
             using (TenderContext tc = new TenderContext())
             {

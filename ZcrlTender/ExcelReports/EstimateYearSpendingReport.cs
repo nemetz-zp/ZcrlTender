@@ -8,6 +8,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ZcrlTender.ExcelReports
 {
+    // Отчёт по годовым тратам по смете (с росписью трат по каждому месяцу)
     public class EstimateYearSpendingReport : ExcelReportMaker
     {
         private Estimate est;
@@ -53,6 +54,22 @@ namespace ZcrlTender.ExcelReports
         List<string> monthPlannedMoneyCells = new List<string>();
         // Список ячеек с остатками средсты по КЕКВ с пределах месяца
         List<string> lastMonthRemainCells = new List<string>();
+
+        protected override string TemplateFile
+        {
+            get 
+            {
+                return FileManager.EstimateMonthSpendingTemplateFile; 
+            }
+        }
+
+        protected override string SaveReportFile
+        {
+            get 
+            {
+                return string.Format("Звіт по кошторисним витратам за {0} рік", year.Year); 
+            }
+        }
 
         private void LoadMoneySourcesList()
         {
@@ -178,11 +195,15 @@ namespace ZcrlTender.ExcelReports
                                 {
                                     Date = g1.Key.DateOfReceiving,
                                     Kekv = g1.Key.PrimaryKekv,
-                                    SpendingDescription = string.Format("Рахунок {0} від {1} року\n({2})",
-                                        g1.Key.Invoice.Number, g1.Key.Invoice.Date.ToShortDateString(), g1.Key.Invoice.Description),
-                                    Contract = string.Format("Договір № {0} від {1} року\n({2})\n{3}",
-                                        g1.Key.Invoice.Contract.Number, g1.Key.Invoice.Contract.SignDate.ToShortDateString(),
-                                        g1.Key.Invoice.Contract.Description, g1.Key.Invoice.Contract.Contractor.ShortName),
+                                    SpendingDescription = string.Format("Рахунок {0} від {1} року{2}",
+                                        g1.Key.Invoice.Number, 
+                                        g1.Key.Invoice.Date.ToShortDateString(), 
+                                        string.IsNullOrWhiteSpace(g1.Key.Invoice.Description) ? string.Empty : string.Format(",\n({0})", g1.Key.Invoice.Description)),
+                                    Contract = string.Format("Договір № {0} від {1} року,{2}\n{3}",
+                                        g1.Key.Invoice.Contract.Number, 
+                                        g1.Key.Invoice.Contract.SignDate.ToShortDateString(),
+                                        string.IsNullOrWhiteSpace(g1.Key.Invoice.Contract.Description) ? string.Empty : string.Format("\n({0}),", g1.Key.Invoice.Contract.Description), 
+                                        g1.Key.Invoice.Contract.Contractor.ShortName),
                                     Type = BalanceChangeType.InvoiceSpending,
                                     SpendingList = GetMoneySourceSpendingRow(sources, g1.Select(p => new MoneySourceSpending
                                     {
@@ -233,11 +254,15 @@ namespace ZcrlTender.ExcelReports
                                 {
                                     Date = g1.Key.DateOfReceiving,
                                     Kekv = g1.Key.SecondaryKekv,
-                                    SpendingDescription = string.Format("Рахунок {0} від {1} року\n({2})",
-                                        g1.Key.Invoice.Number, g1.Key.Invoice.Date.ToShortDateString(), g1.Key.Invoice.Description),
-                                    Contract = string.Format("Договір № {0} від {1} року\n({2})\n{3}",
-                                        g1.Key.Invoice.Contract.Number, g1.Key.Invoice.Contract.SignDate.ToShortDateString(),
-                                        g1.Key.Invoice.Contract.Description, g1.Key.Invoice.Contract.Contractor.ShortName),
+                                    SpendingDescription = string.Format("Рахунок {0} від {1} року{2}",
+                                        g1.Key.Invoice.Number,
+                                        g1.Key.Invoice.Date.ToShortDateString(),
+                                        string.IsNullOrWhiteSpace(g1.Key.Invoice.Description) ? string.Empty : string.Format(",\n({0}),", g1.Key.Invoice.Description)),
+                                    Contract = string.Format("Договір № {0} від {1} року,{2}\n{3}",
+                                        g1.Key.Invoice.Contract.Number,
+                                        g1.Key.Invoice.Contract.SignDate.ToShortDateString(),
+                                        string.IsNullOrWhiteSpace(g1.Key.Invoice.Contract.Description) ? string.Empty : string.Format("\n({0}),", g1.Key.Invoice.Contract.Description),
+                                        g1.Key.Invoice.Contract.Contractor.ShortName),
                                     Type = BalanceChangeType.InvoiceSpending,   
                                     SpendingList = GetMoneySourceSpendingRow(sources, g1.Select(p => new MoneySourceSpending
                                     {
@@ -378,7 +403,7 @@ namespace ZcrlTender.ExcelReports
 
                 if (j != (sourcesNum - 1))
                 {
-                    currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                    currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                 }
             }
             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
@@ -419,7 +444,7 @@ namespace ZcrlTender.ExcelReports
                 }
                 if (j != (sourcesNum - 1))
                 {
-                    currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                    currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                 }
             }
             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
@@ -455,7 +480,7 @@ namespace ZcrlTender.ExcelReports
                         string.Format(prevMonthRemainFormula, currentSourceColumnLetter);
                     if (j != (sourcesNum - 1))
                     {
-                        currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                        currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                     }
                 }
                 xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
@@ -499,7 +524,7 @@ namespace ZcrlTender.ExcelReports
                 }
                 if (j != (sourcesNum - 1))
                 {
-                    currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                    currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                 }
             }
             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
@@ -527,11 +552,10 @@ namespace ZcrlTender.ExcelReports
             currentRowNumber++;
         }
 
-        // Смета с фактическими тратами по месяцам
-        public override void MakeReport()
-        {
-            OpenExcelFile(FileManager.EstimateMonthSpendingTemplateFile);
 
+        // Смета с фактическими тратами по месяцам
+        protected override void WriteDataToFile()
+        {
             using (TenderContext tc = new TenderContext())
             {
                 string estimateName = string.Empty;
@@ -556,11 +580,11 @@ namespace ZcrlTender.ExcelReports
 
                     if(i != (sourcesNum - 1))
                     {
-                        lastMoneySourceColumnLetter = GetNextColumnLettter(lastMoneySourceColumnLetter);
+                        lastMoneySourceColumnLetter = GetNextColumnLetter(lastMoneySourceColumnLetter);
                     }
                     else
                     {
-                        totalMoneySourceColumnLetter = GetNextColumnLettter(lastMoneySourceColumnLetter);
+                        totalMoneySourceColumnLetter = GetNextColumnLetter(lastMoneySourceColumnLetter);
                     }
                 }
                 xlWorksheet.get_Range(totalMoneySourceColumnLetter + beginRowNumber.ToString()).Font.Bold = true;
@@ -592,14 +616,15 @@ namespace ZcrlTender.ExcelReports
                             // Выделяем курсивом другие траты (зарплата, налоги и т.п.)
                             if(spending.Type == BalanceChangeType.PlannedSpending)
                             {
-                                xlWorksheet.get_Range(documentColumnLetter + currentRowNumber.ToString()).Font.Italic = true;
+                                xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(), 
+                                    totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Italic = true;
                             }
 
                             currentSourceColumnLetter = moneySourceSpendingBeginColumn;
                             for (int j = 0; j < spending.SpendingList.Length; j++)
                             {
                                 xlWorksheet.get_Range(currentSourceColumnLetter + currentRowNumber.ToString()).Value = spending.SpendingList[j];
-                                currentSourceColumnLetter = GetNextColumnLettter(currentSourceColumnLetter);
+                                currentSourceColumnLetter = GetNextColumnLetter(currentSourceColumnLetter);
                             }
                             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                             xlWorksheet.get_Range(totalMoneySourceColumnLetter + currentRowNumber.ToString()).Formula
@@ -712,11 +737,6 @@ namespace ZcrlTender.ExcelReports
                 xlWorksheet.get_Range(numColumnLetter + estimateNameCell, totalMoneySourceColumnLetter + estimateNameCell).Merge();
                 xlWorksheet.get_Range(numColumnLetter + dateCell, totalMoneySourceColumnLetter + dateCell).Merge();
             }
-
-            xlWorkbook.SaveAs(System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
-                FileManager.ClearIllegalFileNameSymbols(string.Format("Звіт по кошторисним витратам за {0} рік", year.Year))));
-
-            TerminateExcelProcessInstance();
         }
     }
 }

@@ -16,6 +16,11 @@ namespace ZcrlTender.ExcelReports
         protected Excel.Workbook xlWorkbook;
         protected Excel.Worksheet xlWorksheet;
 
+        // Путь файлу-шаблону отчёта
+        protected abstract string TemplateFile { get; }
+        // Полное имя файла под которым будет сохранён сформированный файл-отчёт
+        protected abstract string SaveReportFile { get; }
+
         protected bool OpenExcelFile(string fileName)
         {
             xlApp = new Excel.Application();
@@ -43,6 +48,11 @@ namespace ZcrlTender.ExcelReports
             return xlWorksheet != null;
         }
 
+        protected void SetActiveSheet(int sheetNumber)
+        {
+            xlWorksheet = (Excel.Worksheet)xlWorkbook.Sheets[sheetNumber];
+        }
+
         protected void TerminateExcelProcessInstance()
         {
             if (xlApp != null && xlWorkbook != null && xlWorksheet != null)
@@ -56,7 +66,7 @@ namespace ZcrlTender.ExcelReports
         }
         
         // Получить букву следующего столбца (в Excel)
-        protected string GetNextColumnLettter(string currentColumnLetter)
+        protected string GetNextColumnLetter(string currentColumnLetter)
         {
             int lastSymbolIndex = currentColumnLetter.Count() - 1;
             char lastSymbol = currentColumnLetter[lastSymbolIndex];
@@ -65,7 +75,7 @@ namespace ZcrlTender.ExcelReports
             {
                 if (lastSymbolIndex > 0)
                 {
-                    return GetNextColumnLettter(currentColumnLetter.Substring(0, lastSymbolIndex)) + "A";
+                    return GetNextColumnLetter(currentColumnLetter.Substring(0, lastSymbolIndex)) + "A";
                 }
                 else
                 {
@@ -126,6 +136,43 @@ namespace ZcrlTender.ExcelReports
             range.Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = 2d;
         }
 
-        public abstract void MakeReport();
+        public void MakeReport()
+        {
+            try
+            {
+                OpenExcelFile(TemplateFile);
+                WriteDataToFile();
+                SaveReportToFile();
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                TerminateExcelProcessInstance();
+            }
+        }
+
+        // Сохранение отчёта в файл
+        private void SaveReportToFile()
+        {
+            string fileNameToSave = System.IO.Path.Combine(FileManager.ReportDirectoryFullPath,
+                FileManager.ClearIllegalFileNameSymbols(SaveReportFile));
+            string newFileName = fileNameToSave;
+
+            string extOfTemplate = System.IO.Path.GetExtension(TemplateFile);
+
+            int i = 1;
+            while (System.IO.File.Exists(newFileName + extOfTemplate))
+            {
+                newFileName = string.Format("{0} ({1})", fileNameToSave, i);
+                i++;
+            }
+
+            xlWorkbook.SaveAs(newFileName);
+        }
+
+        protected abstract void WriteDataToFile();
     }
 }
