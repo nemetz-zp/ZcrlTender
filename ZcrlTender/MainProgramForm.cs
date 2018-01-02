@@ -438,7 +438,9 @@ namespace ZcrlTender
                                  {
                                      Estimate = g.Key,
                                      YearSum = g.Sum(p => p.PrimaryKekvSum)
-                                 }).ToList();
+                                 } into s1
+                                 orderby s1.YearSum descending
+                                 select s1).ToList();
                 estimatesList = new BindingList<EstimatesTableEntry>(estSums);
                 estimateTable.DataSource = estimatesList;
                 estimateTable.Refresh();
