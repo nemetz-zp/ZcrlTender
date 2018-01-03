@@ -33,6 +33,9 @@ namespace ZcrlTender
 
         private volatile bool hasEstimateFreeMoney;
 
+        // Список цветов, которым выделяються записи в годовом плане с одинаковыми кодами
+        private Color[] samePlanCodesColors;
+
         // Флаг процесса загрузки данных
         private object loadingIndicator;
 
@@ -74,6 +77,10 @@ namespace ZcrlTender
         public MainProgramForm()
         {
             InitializeComponent();
+
+            samePlanCodesColors = new Color[2];
+            samePlanCodesColors[0] = System.Drawing.ColorTranslator.FromHtml("#DC143C");
+            samePlanCodesColors[1] = System.Drawing.ColorTranslator.FromHtml("#FF0000");
 
             // Отключаем переключатель просмотра остатков по разным системам (оставляем доработку этого функционала в будущих версиях)
             radioButton1.Visible = radioButton2.Visible = false;
@@ -230,23 +237,48 @@ namespace ZcrlTender
                 // Добавляем обработчики событий для редактирования записей таблиц
                 newInvoiceButton.Click += button10_Click;
                 editInvoiceButton.Click += (sender, e) => EditInvoice();
-                invoicesTable.CellDoubleClick += (sender, e) => EditInvoice();
+                invoicesTable.CellDoubleClick += (sender, e) => 
+                {
+                    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                        return;
+                    EditInvoice();
+                };
 
                 newContractButton.Click += button5_Click;
                 editContractButton.Click += (sender, e) => EditContract();
-                contractsTable.CellDoubleClick += (sender, e) => EditContract();
+                contractsTable.CellDoubleClick += (sender, e) =>
+                {
+                    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                        return;
+                    EditContract();
+                };
 
                 addEstimateButton.Click += addEstimateButton_Click;
                 editEstimateButton.Click += (sender, e) => EditEstimate();
-                estimateTable.CellDoubleClick += (sender, e) => EditEstimate();
+                estimateTable.CellDoubleClick += (sender, e) =>
+                {
+                    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                        return;
+                    EditEstimate();
+                };
 
-                tenderPlanTable.CellDoubleClick += (sender, e) => EditTPRecord();
                 newTPRecordButton.Click += newTPRecordButton_Click;
                 editTPRecordButton.Click += (sender, e) => EditTPRecord();
+                tenderPlanTable.CellDoubleClick += (sender, e) =>
+                {
+                    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                        return;
+                    EditTPRecord();
+                };
 
                 newPlSpendButton.Click += newPlSpendButton_Click;
                 editPlSpendButton.Click += (sender, e) => EditSpendingRecord();
-                spendingTable.CellDoubleClick += (sender, e) => EditSpendingRecord();
+                spendingTable.CellDoubleClick += (sender, e) =>
+                {
+                    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                        return;
+                    EditSpendingRecord();
+                };
 
                 // Если пользователь неавторизирован - делаем недоступными функции добавления, удаления и редактирования записей
                 if(!UserSession.IsAuthorized)
@@ -893,7 +925,7 @@ namespace ZcrlTender
             ToggleTenderPlanRecordsUpdateAnimation();
         }
 
-        private void HighlightRow(DataGridViewRow dataGridViewRow)
+        private void HighlightPlanTotalsRow(DataGridViewRow dataGridViewRow)
         {
             dataGridViewRow.DefaultCellStyle.Font = FormStyles.MoneyTotalsFont;
         }
@@ -1180,6 +1212,12 @@ namespace ZcrlTender
             try
             {
                 TenderPlanItemsTableEntry selectedTPRecord = tenderPlanTable.SelectedRows[0].DataBoundItem as TenderPlanItemsTableEntry;
+                
+                // Если выбрана строка с итогами
+                if(selectedTPRecord.RelatedTenderPlanRecord == null)
+                {
+                    return;
+                }
                 AddEditTPRecordForm tf = new AddEditTPRecordForm(selectedTPRecord.RelatedTenderPlanRecord);
                 tf.ShowDialog();
 
@@ -1697,9 +1735,49 @@ namespace ZcrlTender
         {
             if (tenderPlanItemsList.Count > 2)
             {
-                HighlightRow(tenderPlanTable.Rows[tenderPlanTable.RowCount - 1]);
+                HighlightPlanTotalsRow(tenderPlanTable.Rows[tenderPlanTable.RowCount - 1]);
+            }
+            if (highlightSameCodesRowsCheckBox.Checked)
+            {
+                HighlightSameCodesRows();
             }
             tenderPlanTable.Refresh();
+        }
+
+        // Выделение записей в годовом плане с одинаковым кодом
+        private void HighlightSameCodesRows()
+        {
+            int currentColorIndex = 0;
+            int recordsCount = tenderPlanItemsList.Count;
+            int colorsCount = samePlanCodesColors.Length;
+
+            if(recordsCount < 3)
+            {
+                return;
+            }
+            else
+            {
+                for(int i = 0; i < recordsCount - 1; i++)
+                {
+                    if(tenderPlanItemsList[i].Dk.Equals(tenderPlanItemsList[i+1].Dk))
+                    {
+                        while(i < (recordsCount - 1))
+                        {
+                            if(tenderPlanItemsList[i].Dk.Equals(tenderPlanItemsList[i+1].Dk))
+                            {
+                                tenderPlanTable.Rows[i].DefaultCellStyle.BackColor =
+                                    tenderPlanTable.Rows[i+1].DefaultCellStyle.BackColor = samePlanCodesColors[currentColorIndex];
+                            }
+                            else
+                            {
+                                currentColorIndex = (++currentColorIndex) % colorsCount;
+                                break;
+                            }
+                            i++;
+                        }
+                    }
+                }
+            }
         }
 
         private void currentRemainReportMenuItem_Click(object sender, EventArgs e)
@@ -1715,6 +1793,21 @@ namespace ZcrlTender
             else
             {
                 NotificationHelper.ShowError(wf.Error);
+            }
+        }
+
+        private void highlightSameCodesRowsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if(highlightSameCodesRowsCheckBox.Checked)
+            {
+                HighlightSameCodesRows();
+            }
+            else
+            {
+                for(int i = 0; i < tenderPlanTable.RowCount - 1; i++)
+                {
+                    tenderPlanTable.Rows[i].DefaultCellStyle.BackColor = System.Drawing.SystemColors.Window;
+                }
             }
         }
     }

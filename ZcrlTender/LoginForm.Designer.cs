@@ -147,7 +147,6 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "LoginForm";
-            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Вхід до системи";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

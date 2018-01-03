@@ -221,10 +221,11 @@
             this.yearPlanWithContractsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.yearPlanWithChangesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contractsReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.currentRemainReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.moneyRemainsloadingPicture = new System.Windows.Forms.PictureBox();
             this.оПрограміToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.currentRemainReportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.highlightSameCodesRowsCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsTable)).BeginInit();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plannedSpendingLoadingPicture)).BeginInit();
@@ -1582,6 +1583,7 @@
             // groupBox3
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.highlightSameCodesRowsCheckBox);
             this.groupBox3.Controls.Add(this.tpShowNullCodesChBox);
             this.groupBox3.Controls.Add(this.label17);
             this.groupBox3.Controls.Add(this.label4);
@@ -2072,6 +2074,13 @@
             this.contractsReportMenuItem.Text = "Звіт по договорам";
             this.contractsReportMenuItem.Click += new System.EventHandler(this.contractsReportMenuItem_Click);
             // 
+            // currentRemainReportMenuItem
+            // 
+            this.currentRemainReportMenuItem.Name = "currentRemainReportMenuItem";
+            this.currentRemainReportMenuItem.Size = new System.Drawing.Size(357, 22);
+            this.currentRemainReportMenuItem.Text = "Звіт по поточним залишкам та рахункам на оплату";
+            this.currentRemainReportMenuItem.Click += new System.EventHandler(this.currentRemainReportMenuItem_Click);
+            // 
             // panel1
             // 
             this.panel1.Controls.Add(this.label2);
@@ -2107,12 +2116,16 @@
             this.оПрограміToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             this.оПрограміToolStripMenuItem.Text = "О програмі";
             // 
-            // currentRemainReportMenuItem
+            // highlightSameCodesRowsCheckBox
             // 
-            this.currentRemainReportMenuItem.Name = "currentRemainReportMenuItem";
-            this.currentRemainReportMenuItem.Size = new System.Drawing.Size(357, 22);
-            this.currentRemainReportMenuItem.Text = "Звіт по поточним залишкам та рахункам на оплату";
-            this.currentRemainReportMenuItem.Click += new System.EventHandler(this.currentRemainReportMenuItem_Click);
+            this.highlightSameCodesRowsCheckBox.AutoSize = true;
+            this.highlightSameCodesRowsCheckBox.Location = new System.Drawing.Point(688, 50);
+            this.highlightSameCodesRowsCheckBox.Name = "highlightSameCodesRowsCheckBox";
+            this.highlightSameCodesRowsCheckBox.Size = new System.Drawing.Size(258, 17);
+            this.highlightSameCodesRowsCheckBox.TabIndex = 19;
+            this.highlightSameCodesRowsCheckBox.Text = "Виділяти записи з однаковими кодами за ДК";
+            this.highlightSameCodesRowsCheckBox.UseVisualStyleBackColor = true;
+            this.highlightSameCodesRowsCheckBox.CheckedChanged += new System.EventHandler(this.highlightSameCodesRowsCheckBox_CheckedChanged);
             // 
             // MainProgramForm
             // 
@@ -2325,6 +2338,7 @@
         private System.Windows.Forms.ToolStripMenuItem changePasswordMenuItem;
         private System.Windows.Forms.ToolStripMenuItem contractsReportMenuItem;
         private System.Windows.Forms.ToolStripMenuItem currentRemainReportMenuItem;
+        private System.Windows.Forms.CheckBox highlightSameCodesRowsCheckBox;
     }
 }
 

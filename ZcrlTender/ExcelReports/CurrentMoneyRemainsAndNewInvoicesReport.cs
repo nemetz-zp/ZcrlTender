@@ -272,7 +272,7 @@ namespace ZcrlTender.ExcelReports
 
                 List<Invoice> newInvoices = (from rec in tc.Invoices.ToList()
                                              where ((rec.Contract.Estimate.TenderYearId == year.Id) && (rec.Status == PaymentStatus.New))
-                                             orderby rec.IsCredit
+                                             orderby rec.IsCredit descending
                                              select rec).ToList();
                 
                 currentRowIndex = invoiceBeginRowNumber;
@@ -290,8 +290,10 @@ namespace ZcrlTender.ExcelReports
                 }
                 else
                 {
+                    currentRowIndex--;
                     for (int i = 0; i < newInvoices.Count; i++)
                     {
+                        currentRowIndex++;
                         xlWorksheet.get_Range(invoiceNumColumnLetter + currentRowIndex.ToString()).Value = (i + 1).ToString();
                         xlWorksheet.get_Range(contractorColumnLetter + currentRowIndex.ToString()).Value = newInvoices[i].Contract.Contractor.ShortName;
 
@@ -303,7 +305,7 @@ namespace ZcrlTender.ExcelReports
                         }
                         xlWorksheet.get_Range(contractColumnLetter + currentRowIndex.ToString()).Value = contractName;
 
-                        string invoiceName = string.Format("Рахунок/Акт № {0} від {1} року", newInvoices[i].Number, newInvoices[i].Date);
+                        string invoiceName = string.Format("Рахунок/Акт № {0} від {1} року", newInvoices[i].Number, newInvoices[i].Date.ToShortDateString());
                         if (!string.IsNullOrWhiteSpace(newInvoices[i].Description))
                         {
                             contractName += string.Format(",\n({0})", newInvoices[i].Description);
@@ -312,7 +314,6 @@ namespace ZcrlTender.ExcelReports
 
                         xlWorksheet.get_Range(invoiceSumColumnLetter + currentRowIndex.ToString()).Value = newInvoices[i].Sum;
                         xlWorksheet.get_Range(creditColumnLetter + currentRowIndex.ToString()).Value = newInvoices[i].IsCredit ? "БОРГ" : string.Empty;
-                        currentRowIndex++;
                     }
                 }
 
