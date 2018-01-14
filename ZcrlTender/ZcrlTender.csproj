@@ -175,6 +175,30 @@
     <Compile Include="SelectEstimateForReportForm.Designer.cs">
       <DependentUpon>SelectEstimateForReportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SetContractsReportFilterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetContractsReportFilterForm.Designer.cs">
+      <DependentUpon>SetContractsReportFilterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SetYearPlanReportFilter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetYearPlanReportFilter.Designer.cs">
+      <DependentUpon>SetYearPlanReportFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TenderPlanRecordPicker.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TenderPlanRecordPicker.Designer.cs">
+      <DependentUpon>TenderPlanRecordPicker.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TenderPlanRecordSelectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TenderPlanRecordSelectForm.Designer.cs">
+      <DependentUpon>TenderPlanRecordSelectForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UserSession.cs" />
     <Compile Include="ViewHelper.cs" />
     <Compile Include="ViewModels\ContractsTableEntry.cs" />
@@ -277,6 +301,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SelectEstimateForReportForm.resx">
       <DependentUpon>SelectEstimateForReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SetContractsReportFilterForm.resx">
+      <DependentUpon>SetContractsReportFilterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SetYearPlanReportFilter.resx">
+      <DependentUpon>SetYearPlanReportFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TenderPlanRecordPicker.resx">
+      <DependentUpon>TenderPlanRecordPicker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TenderPlanRecordSelectForm.resx">
+      <DependentUpon>TenderPlanRecordSelectForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TenderYearForm.resx">
       <DependentUpon>TenderYearForm.cs</DependentUpon>

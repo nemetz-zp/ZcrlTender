@@ -54,18 +54,6 @@ namespace TenderLibrary
                .HasForeignKey(p => p.SecondaryKekvId)
                .WillCascadeOnDelete(false);
 
-            // Настройки внешних ключей для Contract
-            modelBuilder.Entity<Contract>()
-               .HasRequired(p => p.PrimaryKekv)
-               .WithMany()
-               .HasForeignKey(p => p.PrimaryKekvId)
-               .WillCascadeOnDelete(false);
-            modelBuilder.Entity<Contract>()
-               .HasRequired(p => p.SecondaryKekv)
-               .WithMany()
-               .HasForeignKey(p => p.SecondaryKekvId)
-               .WillCascadeOnDelete(false);
-
             // Настройки внешних ключей для PlannedSpending
             modelBuilder.Entity<PlannedSpending>()
                .HasRequired(p => p.PrimaryKekv)
@@ -77,6 +65,13 @@ namespace TenderLibrary
                .WithMany()
                .HasForeignKey(p => p.SecondaryKekvId)
                .WillCascadeOnDelete(false);
+
+            // Настройка внешнего ключа для Contract
+            modelBuilder.Entity<Contract>()
+                .HasRequired(p => p.RecordInPlan)
+                .WithMany(p => p.RegisteredContracts)
+                .HasForeignKey(p => p.TenderPlanRecordId)
+                .WillCascadeOnDelete(false);
 
             base.OnModelCreating(modelBuilder);
         }

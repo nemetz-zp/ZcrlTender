@@ -89,10 +89,10 @@ namespace ZcrlTender
                              .ToList()
                              .DefaultIfEmpty(0)
                              .Sum();
-                decimal plannedMoneyOnKekv = tc.TenderPlanRecords
+                decimal plannedMoneyOnKekv = tc.TenderPlanRecords.ToList()
                     .Where(p => (p.EstimateId == spendingRecord.EstimateId)
                              && (p.PrimaryKekvId == spendingRecord.PrimaryKekvId))
-                    .Select(p => p.Sum)
+                    .Select(p => p.UsedByRecordSum)
                     .ToList()
                     .DefaultIfEmpty(0)
                     .Sum();
@@ -363,7 +363,7 @@ namespace ZcrlTender
                                                          select new KekvRemain
                                                          {
                                                              Kekv = g1.Key,
-                                                             Remain = g1.Sum(p => p.Sum)
+                                                             Remain = g1.Sum(p => p.UsedByRecordSum)
                                                          }).ToList();
 
                 List<KekvRemain> availableMoneyForPlannedSpending = (from rec1 in notPlannedEstimateMoney

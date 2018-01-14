@@ -79,7 +79,7 @@ namespace ZcrlTender
             InitializeComponent();
 
             samePlanCodesColors = new Color[2];
-            samePlanCodesColors[0] = System.Drawing.ColorTranslator.FromHtml("#DC143C");
+            samePlanCodesColors[0] = System.Drawing.ColorTranslator.FromHtml("#a36104");
             samePlanCodesColors[1] = System.Drawing.ColorTranslator.FromHtml("#FF0000");
 
             // Отключаем переключатель просмотра остатков по разным системам (оставляем доработку этого функционала в будущих версиях)
@@ -348,7 +348,7 @@ namespace ZcrlTender
                 if (selectedContractorInInvGroup > 0)
                 {
                     contractsForCBList = new BindingList<Contract>(tc.Contracts
-                        .Where(p => (p.ContractorId == selectedContractorInInvGroup) && (p.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id))
+                        .Where(p => (p.ContractorId == selectedContractorInInvGroup) && (p.RecordInPlan.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id))
                         .ToList());
                 }
                 else
@@ -781,98 +781,58 @@ namespace ZcrlTender
             {
                 using (TenderContext tc = new TenderContext())
                 {
-                    List<TenderPlanItemsTableEntry> planRecords = null;
-                    List<TenderPlanItemsTableEntry> contractsMoney = null;
 
-                    List<TenderPlanRecord> allPlanRecords;
-                    List<Contract> allContracts;
+                    List<TenderPlanRecord> allPlanRecords = null;
 
                     if(filter.Estimate.Id > 0)
                     {
                         allPlanRecords = (from r in tc.TenderPlanRecords
                                           where r.EstimateId == filter.Estimate.Id
                                           select r).ToList();
-                        allContracts = (from r in tc.Contracts
-                                        where r.EstimateId == filter.Estimate.Id
-                                        select r).ToList();
                     }
                     else
                     {
                         allPlanRecords = (from r in tc.TenderPlanRecords
                                           where r.Estimate.TenderYearId == CurrentTenderYear.Id
                                           select r).ToList();
-                        allContracts = (from r in tc.Contracts
-                                        where r.Estimate.TenderYearId == CurrentTenderYear.Id
-                                        select r).ToList();
                     }
 
                     if (filter.PrimaryKekvSelected)
                     {
-                        planRecords     = (from r in allPlanRecords.ToList()
+                        resultList     = (from r in allPlanRecords.ToList()
                                            select new TenderPlanItemsTableEntry
                                            {
                                                Kekv = r.PrimaryKekv,
                                                Dk = r.Dk,
-                                               MoneyOnCode = r.Sum,
+                                               MoneyOnCode = r.PlannedSum,
                                                RelatedTenderPlanRecord = r,
-                                               Estimate = r.Estimate
+                                               Estimate = r.Estimate,
+                                               RegisteredByContracts = r.RegisteredContracts.Sum(p => p.Sum),
+                                               ContractsMoneyRemain = r.RegisteredContracts.Sum(p => p.MoneyRemain),
+                                               UsedByContracts = r.RegisteredContracts.Sum(p => p.UsedMoney)
                                            }).ToList();
-                        contractsMoney =   (from c in allContracts.ToList()
-                                            group c by new { c.Estimate, c.PrimaryKekv, c.Dk } into g1
-                                            select new TenderPlanItemsTableEntry
-                                            {
-                                                Kekv = g1.Key.PrimaryKekv,
-                                                Dk = g1.Key.Dk,
-                                                Estimate = g1.Key.Estimate,
-                                                RegisteredByContracts = g1.Sum(p => p.Sum),
-                                                ContractsMoneyRemain = g1.Sum(p => p.MoneyRemain),
-                                                UsedByContracts = g1.Sum(p => p.UsedMoney)
-                                            }).ToList();
                     }
                     else
                     {
-                        planRecords = (from r in allPlanRecords
+                        resultList = (from r in allPlanRecords
                                        select new TenderPlanItemsTableEntry
                                        {
                                            Kekv = r.SecondaryKekv,
                                            Dk = r.Dk,
-                                           MoneyOnCode = r.Sum,
+                                           MoneyOnCode = r.PlannedSum,
                                            RelatedTenderPlanRecord = r,
-                                           Estimate = r.Estimate
+                                           Estimate = r.Estimate,
+                                           RegisteredByContracts = r.RegisteredContracts.Sum(p => p.Sum),
+                                           ContractsMoneyRemain = r.RegisteredContracts.Sum(p => p.MoneyRemain),
+                                           UsedByContracts = r.RegisteredContracts.Sum(p => p.UsedMoney)
                                        }).ToList();
-                        contractsMoney = (from c in allContracts
-                                          group c by new { c.Estimate, c.SecondaryKekv, c.Dk } into g1
-                                          select new TenderPlanItemsTableEntry
-                                          {
-                                              Kekv = g1.Key.SecondaryKekv,
-                                              Dk = g1.Key.Dk,
-                                              Estimate = g1.Key.Estimate,
-                                              RegisteredByContracts = g1.Sum(p => p.Sum),
-                                              ContractsMoneyRemain = g1.Sum(p => p.MoneyRemain),
-                                              UsedByContracts = g1.Sum(p => p.UsedMoney)
-                                          }).ToList();
                     }
 
                     if (filter.Kekv.Id > 0)
                     {
-                        planRecords = planRecords.Where(p => p.Kekv.Id == filter.Kekv.Id).ToList();
-                        contractsMoney = contractsMoney.Where(p => p.Kekv.Id == filter.Kekv.Id).ToList();
+                        resultList = resultList.Where(p => p.Kekv.Id == filter.Kekv.Id).ToList();
                     }
-
-                    resultList = (from p in planRecords
-                                  join u in contractsMoney on new { p.Estimate, p.Kekv, p.Dk } equals new { u.Estimate, u.Kekv, u.Dk } into g2
-                                  from t3 in g2.DefaultIfEmpty(new TenderPlanItemsTableEntry())
-                                  select new TenderPlanItemsTableEntry
-                                  {
-                                      RelatedTenderPlanRecord = p.RelatedTenderPlanRecord,
-                                      Kekv = p.Kekv,
-                                      Dk = p.Dk,
-                                      MoneyOnCode = p.MoneyOnCode,
-                                      Estimate = p.Estimate,
-                                      RegisteredByContracts = t3.RegisteredByContracts,
-                                      UsedByContracts = t3.UsedByContracts,
-                                      ContractsMoneyRemain = t3.ContractsMoneyRemain
-                                  }).ToList();
+                    
                     // Упорядочить по КЕКВ, потом по коду ДК
                     //resultList.resultList = resultList.OrderBy(p => p.Kekv.Id).ThenBy(p => p.Dk.Code).ToList();
                     // ... либо только по коду ДК 
@@ -943,12 +903,12 @@ namespace ZcrlTender
                         return;
                     }
 
-                    List<Contract> allContracts = tc.Contracts.Where(p => (p.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id) &&
+                    List<Contract> allContracts = tc.Contracts.Where(p => (p.RecordInPlan.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id) &&
                         ((p.SignDate >= contStartDatePicker.Value) && (p.SignDate <= contEndDatePicker.Value))).ToList();
 
                     if(filter.Estimate.Id > 0)
                     {
-                        allContracts = allContracts.Where(p=> (p.EstimateId == filter.Estimate.Id)).ToList();
+                        allContracts = allContracts.Where(p=> (p.RecordInPlan.EstimateId == filter.Estimate.Id)).ToList();
                     }
 
                     if (filter.Contractor.Id > 0)
@@ -959,11 +919,11 @@ namespace ZcrlTender
                     {
                         if (filter.PrimaryKekvSelected)
                         {
-                            allContracts = allContracts.Where(p => p.PrimaryKekvId == filter.Kekv.Id).ToList();
+                            allContracts = allContracts.Where(p => p.RecordInPlan.PrimaryKekvId == filter.Kekv.Id).ToList();
                         }
                         else
                         {
-                            allContracts = allContracts.Where(p => p.SecondaryKekvId == filter.Kekv.Id).ToList();
+                            allContracts = allContracts.Where(p => p.RecordInPlan.SecondaryKekvId == filter.Kekv.Id).ToList();
                         }
                     }
 
@@ -1024,14 +984,14 @@ namespace ZcrlTender
                 {
                     InvoiceRecordsFilter filter = e.Argument as InvoiceRecordsFilter;
                     int selectedEstimateId = filter.EstimateId;
-                    List<Invoice> allInvoices = tc.Invoices.Where(p => p.Contract.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id)
+                    List<Invoice> allInvoices = tc.Invoices.Where(p => p.Contract.RecordInPlan.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id)
                         .ToList()
                         .Where(p => ((p.Date >= invStartDatePicker.Value) && (p.Date <= invEndDatePicker.Value)))
                         .ToList();
 
                     if(selectedEstimateId > 0)
                     {
-                        allInvoices = allInvoices.Where(p => (p.Contract.EstimateId == selectedEstimateId)).ToList();
+                        allInvoices = allInvoices.Where(p => (p.Contract.RecordInPlan.EstimateId == selectedEstimateId)).ToList();
                     }
 
                     if (filter.Contractor.Id > 0)
@@ -1042,11 +1002,11 @@ namespace ZcrlTender
                     {
                         if (filter.PrimaryKekvSelected)
                         {
-                            allInvoices = allInvoices.Where(p => p.Contract.PrimaryKekvId == filter.Kekv.Id).ToList();
+                            allInvoices = allInvoices.Where(p => p.Contract.RecordInPlan.PrimaryKekvId == filter.Kekv.Id).ToList();
                         }
                         else
                         {
-                            allInvoices = allInvoices.Where(p => p.Contract.SecondaryKekvId == filter.Kekv.Id).ToList();
+                            allInvoices = allInvoices.Where(p => p.Contract.RecordInPlan.SecondaryKekvId == filter.Kekv.Id).ToList();
                         }
                     }
 
@@ -1175,7 +1135,7 @@ namespace ZcrlTender
                     .Sum();
                 // Деньги распределённые в плане
                 decimal plannedMoney = tc.TenderPlanRecords.Where(p => (p.EstimateId == est.Id))
-                    .Select(p => p.Sum)
+                    .Select(p => p.PlannedSum)
                     .DefaultIfEmpty(0)
                     .Sum();
                 
@@ -1460,7 +1420,7 @@ namespace ZcrlTender
                         return;
                     }
 
-                    if(tc.Contracts.Where(p => p.EstimateId == selectedEstimate.Id).Any())
+                    if(tc.Contracts.Where(p => p.RecordInPlan.EstimateId == selectedEstimate.Id).Any())
                     {
                         NotificationHelper.ShowError("Видалення кошторису неможливе, оскільки під нього є зареєстровані договори!");
                         this.Enabled = true;
@@ -1609,20 +1569,13 @@ namespace ZcrlTender
 
         private void yearPlanWithContractsMenuItem_Click(object sender, EventArgs e)
         {
-            SelectEstimateForReportForm sf = new SelectEstimateForReportForm();
+            SetYearPlanReportFilter sf = new SetYearPlanReportFilter();
             sf.ShowDialog();
 
-            if(sf.SelectedEstimate != null)
+            if(sf.FilteDataWasSelected)
             {
-                YearPlanReport report = null;
-                if (sf.SelectedEstimate.Id > 0)
-                {
-                    report = new YearPlanReport(sf.SelectedEstimate, sf.IsNewSystemSelected);
-                }
-                else
-                {
-                    report = new YearPlanReport(MainProgramForm.CurrentTenderYear, sf.IsNewSystemSelected);
-                }
+                YearPlanReport report = new YearPlanReport(MainProgramForm.CurrentTenderYear, 
+                    sf.SelectedEstimate, sf.IsNewSystemSelected, sf.SelectedKekv);
 
                 WaitingForm wf = new WaitingForm("Формування звіту", () => report.MakeReport());
                 wf.ShowDialog();
@@ -1671,20 +1624,13 @@ namespace ZcrlTender
 
         private void yearPlanWithChangesMenuItem_Click(object sender, EventArgs e)
         {
-            SelectEstimateForReportForm sf = new SelectEstimateForReportForm();
+            SetYearPlanReportFilter sf = new SetYearPlanReportFilter();
             sf.ShowDialog();
 
-            if (sf.SelectedEstimate != null)
+            if (sf.FilteDataWasSelected)
             {
-                YearPlanChangesReport report = null;
-                if (sf.SelectedEstimate.Id > 0)
-                {
-                    report = new YearPlanChangesReport(sf.SelectedEstimate, sf.IsNewSystemSelected);
-                }
-                else
-                {
-                    report = new YearPlanChangesReport(MainProgramForm.CurrentTenderYear, sf.IsNewSystemSelected);
-                }
+                YearPlanChangesReport report = new YearPlanChangesReport(MainProgramForm.CurrentTenderYear, 
+                    sf.SelectedEstimate, sf.IsNewSystemSelected, sf.SelectedKekv);
 
                 WaitingForm wf = new WaitingForm("Формування звіту", () => report.MakeReport());
                 wf.ShowDialog();
@@ -1702,20 +1648,13 @@ namespace ZcrlTender
 
         private void contractsReportMenuItem_Click(object sender, EventArgs e)
         {
-            SelectEstimateForReportForm sf = new SelectEstimateForReportForm();
+            SetContractsReportFilterForm sf = new SetContractsReportFilterForm();
             sf.ShowDialog();
 
-            if (sf.SelectedEstimate != null)
+            if (sf.FilteDataWasSelected)
             {
-                ContractsSpendingReport report = null;
-                if (sf.SelectedEstimate.Id > 0)
-                {
-                    report = new ContractsSpendingReport(sf.SelectedEstimate, sf.IsNewSystemSelected);
-                }
-                else
-                {
-                    report = new ContractsSpendingReport(MainProgramForm.CurrentTenderYear, sf.IsNewSystemSelected);
-                }
+                ContractsSpendingReport report = new ContractsSpendingReport(MainProgramForm.CurrentTenderYear, sf.SelectedEstimate, 
+                    sf.IsNewSystemSelected, sf.SelectedKekv, sf.SelectedContractor);
 
                 WaitingForm wf = new WaitingForm("Формування звіту", () => report.MakeReport());
                 wf.ShowDialog();

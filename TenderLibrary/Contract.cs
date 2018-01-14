@@ -18,17 +18,8 @@ namespace TenderLibrary
     {
         public int Id { get; set; }
 
-        public virtual KekvCode PrimaryKekv { get; set; }
-        public int PrimaryKekvId { get; set; }
-
-        public virtual Estimate Estimate { get; set; }
-        public int EstimateId { get; set; }
-
-        public virtual KekvCode SecondaryKekv { get; set; }
-        public int SecondaryKekvId { get; set; }
-
-        public virtual DkCode Dk { get; set; }
-        public int DkCodeId { get; set; }
+        public virtual TenderPlanRecord RecordInPlan { get; set; }
+        public int TenderPlanRecordId { get; set; }
 
         public virtual Contractor Contractor { get; set; }
         public int ContractorId { get; set; }
@@ -65,6 +56,13 @@ namespace TenderLibrary
         // Счёта взятые по договору
         public virtual ICollection<Invoice> Invoices { get; set; }
         public virtual ICollection<ContractChange> ContractChanges { get; set; }
+
+        public Contract()
+        {
+            RelatedFiles = new List<UploadedFile>();
+            Invoices = new List<Invoice>();
+            ContractChanges = new List<ContractChange>();
+        }
 
         [NotMapped]
         public ContractStatus Status
@@ -104,11 +102,6 @@ namespace TenderLibrary
             {
                 return Sum - UsedMoney;
             }
-        }
-
-        public Contract()
-        {
-            RelatedFiles = new List<UploadedFile>();
         }
 
         public override bool Equals(object obj)

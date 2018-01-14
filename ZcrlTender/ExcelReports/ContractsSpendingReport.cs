@@ -11,7 +11,6 @@ namespace ZcrlTender.ExcelReports
     // Отчёт по затратам по договорам
     public class ContractsSpendingReport : ExcelReportMaker
     {
-        private Estimate est;
         private TenderYear year;
         private bool isNewSystem;
         private int reportTitleRow = 2;
@@ -35,6 +34,11 @@ namespace ZcrlTender.ExcelReports
         private int beginRowNumber = 8;
         private int currentRowNumber = 8;
 
+        // Критерии отбора договоров для отчёта
+        private Estimate estFilter;
+        private KekvCode kekvFilter;
+        private Contractor contractorFilter;
+
         protected override string TemplateFile
         {
             get 
@@ -55,9 +59,9 @@ namespace ZcrlTender.ExcelReports
         {
             using(TenderContext tc = new TenderContext())
             {
-                if (est != null)
+                if (estFilter != null)
                 {
-                    sources = tc.BalanceChanges.Where(p => p.EstimateId == est.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
+                    sources = tc.BalanceChanges.Where(p => p.EstimateId == estFilter.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
                 }
                 else
                 {
@@ -68,18 +72,13 @@ namespace ZcrlTender.ExcelReports
             }
         }
 
-        public ContractsSpendingReport(Estimate est, bool isNewSystem)
+        public ContractsSpendingReport(TenderYear year, Estimate est, bool isNewSystem, KekvCode kekv, Contractor contractor)
         {
-            this.est = est;
-            this.year = est.Year;
-            this.isNewSystem = isNewSystem;
-            LoadMoneySourceList();
-        }
-
-        public ContractsSpendingReport(TenderYear year, bool isNewSystem)
-        {
+            this.estFilter = est;
             this.year = year;
             this.isNewSystem = isNewSystem;
+            this.kekvFilter = kekv;
+            this.contractorFilter = contractor;
             LoadMoneySourceList();
         }
 
@@ -95,15 +94,20 @@ namespace ZcrlTender.ExcelReports
             {
                 string estimateName = string.Empty;
                 List<Contract> contractsList = null;
-                if (est != null)
+                if (estFilter.Id > 0)
                 {
-                    estimateName = est.Name;
-                    contractsList = tc.Contracts.Where(p => p.EstimateId == est.Id).ToList();
+                    estimateName = estFilter.Name;
+                    contractsList = tc.Contracts.Where(p => p.RecordInPlan.EstimateId == estFilter.Id).ToList();
                 }
                 else
                 {
                     estimateName = "Всі кошториси від початку року";
-                    contractsList = tc.Contracts.Where(p => p.Estimate.TenderYearId == year.Id).ToList();
+                    contractsList = tc.Contracts.Where(p => p.RecordInPlan.Estimate.TenderYearId == year.Id).ToList();
+                }
+
+                if(contractorFilter.Id > 0)
+                {
+                    contractsList = contractsList.Where(p => p.ContractorId == contractorFilter.Id).ToList();
                 }
 
                 xlWorksheet.get_Range(numColumnLetter + yearCell).Value = string.Format("на {0} рік", year.Year);
@@ -138,10 +142,11 @@ namespace ZcrlTender.ExcelReports
                 xlWorksheet.get_Range(contractRemainColumnLetter + (beginRowNumber - 1).ToString()).Value= "Залишок";
 
                 List<GroupedByKekvContracts> groupedByKekvContracts = null;
+
                 if (isNewSystem)
                 {
                     groupedByKekvContracts = (from contr in contractsList
-                                              group contr by contr.PrimaryKekv into g1
+                                              group contr by contr.RecordInPlan.PrimaryKekv into g1
                                               select new GroupedByKekvContracts
                                               {
                                                   Kekv = g1.Key,
@@ -151,12 +156,27 @@ namespace ZcrlTender.ExcelReports
                 else
                 {
                     groupedByKekvContracts = (from contr in contractsList
-                                              group contr by contr.SecondaryKekv into g1
+                                              group contr by contr.RecordInPlan.SecondaryKekv into g1
                                               select new GroupedByKekvContracts
                                               {
                                                   Kekv = g1.Key,
                                                   Contracts = g1.OrderBy(p => p.Contractor).ToList()
                                               }).ToList();
+                }
+
+                if(kekvFilter.Id > 0)
+                {
+                    groupedByKekvContracts = groupedByKekvContracts.Where(p => p.Kekv.Id == kekvFilter.Id).ToList();
+                }
+
+                if(groupedByKekvContracts.Count == 0)
+                {
+                    currentRowNumber++;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
+                        contractRemainColumnLetter + currentRowNumber.ToString()).Merge();
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Italic = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = "Договори відсутні";
                 }
 
                 foreach(var kekv in groupedByKekvContracts)

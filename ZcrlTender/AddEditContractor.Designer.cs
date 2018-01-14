@@ -303,7 +303,7 @@
             this.contactsTable.Name = "contactsTable";
             this.contactsTable.RowHeadersVisible = false;
             this.contactsTable.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.contactsTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.contactsTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.contactsTable.Size = new System.Drawing.Size(805, 241);
             this.contactsTable.TabIndex = 2;
             this.contactsTable.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.contactsTable_CellValidating);

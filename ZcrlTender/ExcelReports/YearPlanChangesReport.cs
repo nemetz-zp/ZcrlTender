@@ -11,34 +11,41 @@ namespace ZcrlTender.ExcelReports
 {
     public class YearPlanChangesReport : ExcelReportMaker
     {
-        private Estimate est;
         private TenderYear year;
-        private bool isNewSystem;
         private string yearCell = "A3";
         private string dateCell = "A6";
         private string estimateNameCell = "A4";
         private string numColumnLetter = "A";
         private string dateOfCodeChangeColumnLetter = "B";
         private string dkCodeColumnLetter = "C";
-        private string plannedMoneyColumnLetter = "D";
+        private string procedureNameColumnLetter = "D";
+        private string plannedPeriodColumnLetter = "E";
+        private string plannedMoneyColumnLetter = "F";
         private int beginRowNumber = 8;
         private int currentRowNumber = 8;
+
+        // Критерии отбора записей в годовом плане
+        private Estimate estFilter;
+        private bool isNewSystem;
+        private KekvCode kekvFilter;
 
         private List<string> dkCodesInKekv = new List<string>();
         private List<string> kekvsList = new List<string>();
         private List<int> kekvsHeaders = new List<int>();
 
-        public YearPlanChangesReport(Estimate est, bool isNewSystem)
-        {
-            this.est = est;
-            this.year = est.Year;
-            this.isNewSystem = isNewSystem;
-        }
+        private string[] monthes = { 
+                                       "Січень", "Лютий", "Березень",
+                                       "Квітень", "Травень", "Червень",
+                                       "Липень", "Серпень", "Вересень",
+                                       "Жовтень", "Листопад", "Грудень"
+                                   };
 
-        public YearPlanChangesReport(TenderYear year, bool isNewSystem)
+        public YearPlanChangesReport(TenderYear year, Estimate est, bool isNewSystem, KekvCode kekv)
         {
             this.year = year;
             this.isNewSystem = isNewSystem;
+            this.estFilter = est;
+            this.kekvFilter = kekv;
         }
 
         protected override string SaveReportFile
@@ -70,11 +77,11 @@ namespace ZcrlTender.ExcelReports
             using (TenderContext tc = new TenderContext())
             {
                 string estimateName = string.Empty;
-                if (est != null)
+                if (estFilter.Id > 0)
                 {
-                    estimateName = est.Name;
+                    estimateName = estFilter.Name;
                     allPlanRecords = (from r in tc.TenderPlanRecords
-                                      where r.EstimateId == est.Id
+                                      where r.EstimateId == estFilter.Id
                                       select r).ToList();
                 }
                 else
@@ -96,7 +103,7 @@ namespace ZcrlTender.ExcelReports
                                    {
                                        Kekv = r.PrimaryKekv,
                                        Dk = r.Dk,
-                                       MoneyOnCode = r.Sum,
+                                       MoneyOnCode = r.PlannedSum,
                                        RelatedTenderPlanRecord = r,
                                        Estimate = r.Estimate
                                    }).ToList();
@@ -108,10 +115,24 @@ namespace ZcrlTender.ExcelReports
                                    {
                                        Kekv = r.SecondaryKekv,
                                        Dk = r.Dk,
-                                       MoneyOnCode = r.Sum,
+                                       MoneyOnCode = r.PlannedSum,
                                        RelatedTenderPlanRecord = r,
                                        Estimate = r.Estimate
                                    }).ToList();
+                }
+
+                if(kekvFilter.Id > 0)
+                {
+                    planRecords = planRecords.Where(p => p.Kekv.Id == kekvFilter.Id).ToList();
+                }
+
+                if(planRecords.Count == 0)
+                {
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
+                        plannedMoneyColumnLetter + currentRowNumber.ToString()).Merge();
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Italic = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = "Записи в річному плані відсутні";
                 }
 
                 var groupedByKekvResult = planRecords.GroupBy(p => p.Kekv);
@@ -137,23 +158,24 @@ namespace ZcrlTender.ExcelReports
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = (dkCodeNum + 1).ToString();
 
                         xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Font.Bold = true;
-                        if (est != null)
+ 
+                        string dkCodeName = string.Format("{0} ({1})\n Затверджено протоколом № {2} від {3} року",
+                            code.Dk.FullName,
+                            code.RelatedTenderPlanRecord.ConcreteName,
+                            code.RelatedTenderPlanRecord.ProtocolNum,
+                            code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+                        if (code.RelatedTenderPlanRecord.CodeRepeatReason != null)
                         {
-                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Value = string.Format("{0} ({1})", code.Dk.FullName, code.RelatedTenderPlanRecord.ConcreteName);
+                            dkCodeName = string.Format("{0}\nОбгрунтування повторення коду: {1}", dkCodeName, code.RelatedTenderPlanRecord.CodeRepeatReason);
                         }
-                        else
-                        {
-                            string dkCodeName = string.Format("{0} ({1})\n({2})", code.Dk.FullName, code.RelatedTenderPlanRecord.ConcreteName, code.Estimate.Name);
-                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Value = dkCodeName;
-                            int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
-                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Size = 9;
-                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Italic = true;
-                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Bold = false;
-
-                        }
+                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Value = dkCodeName;
+                        int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
+                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Size = 9;
+                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Italic = true;
+                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Bold = false;
 
                         xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()).RowHeight = xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).RowHeight;
                         xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Cut(xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()));
@@ -163,6 +185,9 @@ namespace ZcrlTender.ExcelReports
                         xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()).HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                         xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()).VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
 
+                        xlWorksheet.get_Range(procedureNameColumnLetter + currentRowNumber.ToString()).Value = TenderPlanRecord.GetProcedureName(code.RelatedTenderPlanRecord.ProcedureType);
+                        xlWorksheet.get_Range(plannedPeriodColumnLetter + currentRowNumber.ToString()).Value =
+                           string.Format("{0} {1} року", monthes[code.RelatedTenderPlanRecord.TenderBeginDate.Month - 1], code.RelatedTenderPlanRecord.TenderBeginDate.Year);
                         xlWorksheet.get_Range(plannedMoneyColumnLetter + currentRowNumber.ToString()).Value = code.MoneyOnCode;
 
                         List<TenderPlanRecordChange> changesList = code.RelatedTenderPlanRecord.Changes.OrderByDescending(p => p.DateOfChange).ToList();

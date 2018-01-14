@@ -14,6 +14,12 @@ namespace ZcrlTender
     public partial class AddEditTPRecordForm : Form
     {
         private TenderPlanRecord planRecord;
+        private TenderYear year;
+
+        // Список связанных с записью в плане файлов
+        private BindingList<UploadedFile> relatedFiles;
+        // Список файлов на удаление
+        private List<UploadedFile> deletingFiles;
 
         private List<KekvRemain> primaryKekvList;
         private List<KekvRemain> altKekvList;
@@ -39,7 +45,10 @@ namespace ZcrlTender
         // Создание нового кода в плане
         public AddEditTPRecordForm(TenderYear year)
         {
+            this.year = year;
             InitializeComponent();
+            InitializeControls();
+            LoadProcedureTypesCBList();
 
             button1.Visible = UserSession.IsAuthorized;
 
@@ -48,7 +57,7 @@ namespace ZcrlTender
             
             using(TenderContext tc = new TenderContext())
             {
-                estimateList = tc.Estimates.Where(p => p.TenderYearId == year.Id).ToList();
+                estimateList = tc.Estimates.Where(p => p.TenderYearId == this.year.Id).ToList();
                 controlWasChangedByUser = false;
                 estimatesCBList.DataSource = estimateList;
                 controlWasChangedByUser = true;
@@ -65,6 +74,22 @@ namespace ZcrlTender
 
                 mainKekv.SelectedIndexChanged += mainKekv_SelectedIndexChangedHandler;
             }
+        }
+
+        private void InitializeControls()
+        {
+            filesTable.AutoGenerateColumns = false;
+
+            tenderBeginDate.Value = protocolDate.Value =
+                new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0).AddYears(Convert.ToInt32(year.Year) - DateTime.Now.Year);
+            tenderBeginDate.MinDate = new DateTime(Convert.ToInt32(year.Year), 1, 1, 0, 0, 0);
+            protocolDate.MinDate = new DateTime(Convert.ToInt32(year.Year - 1), 1, 1, 0, 0, 0);
+            tenderBeginDate.MaxDate = protocolDate.MaxDate =  new DateTime(Convert.ToInt32(year.Year), 12, 31, 0, 0, 0);
+
+            deletingFiles = new List<UploadedFile>();
+            relatedFiles = new BindingList<UploadedFile>();
+            filesTable.DataSource = relatedFiles;
+            DataGridViewHelper.ConfigureFileTable(filesTable, relatedFiles, deletingFiles, linkLabel1, linkLabel2, linkLabel3);
         }
 
         private void LoadKekvsOnEstimate(Estimate est)
@@ -88,7 +113,7 @@ namespace ZcrlTender
                 List<KekvRemain> plannedMoneyOnKekvs = (from planItem in tc.TenderPlanRecords.ToList()
                                                         where planItem.EstimateId == est.Id
                                                         group planItem by planItem.PrimaryKekv into g1
-                                                        select new KekvRemain { Kekv = g1.Key, Sum = g1.Sum(p => p.Sum) }).ToList();
+                                                        select new KekvRemain { Kekv = g1.Key, Sum = g1.Sum(p => p.UsedByRecordSum) }).ToList();
                 List<KekvRemain> result = (from rec in kekvsRemainsByEstimate
                                            join planItem in plannedMoneyOnKekvs on rec.Kekv equals planItem.Kekv into j1
                                            from rightSide in j1.DefaultIfEmpty(new KekvRemain { Kekv = rec.Kekv, Sum = 0 })
@@ -111,6 +136,21 @@ namespace ZcrlTender
             dkCodeSum.Maximum = selectedMainKekv.Sum;
             
             mainKekv.Enabled = dkCodesCBList.Enabled = true;
+        }
+
+        private void LoadProcedureTypesCBList()
+        {
+            procedureTypeCBList.DataSource = new [] 
+            {
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.WithoutSystem), Value = (int)ProcedureType.WithoutSystem},
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.Limited), Value = (int)ProcedureType.Limited},
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.ContractReport), Value = (int)ProcedureType.ContractReport},
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.Open), Value = (int)ProcedureType.Open},
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.Private), Value = (int)ProcedureType.Private},
+                new { Name = TenderPlanRecord.GetProcedureName(ProcedureType.Dialog), Value = (int)ProcedureType.Dialog},
+            };
+            procedureTypeCBList.DisplayMember = "Name";
+            procedureTypeCBList.ValueMember = "Value";
         }
 
         private void mainKekv_SelectedIndexChangedHandler(object sender, EventArgs e)
@@ -136,9 +176,17 @@ namespace ZcrlTender
                 // Получаем список всех кодов ДК
                 List<DkCode> allDkCodesList = tc.DkCodes.ToList();
 
-                // Исключаем из списка кодов ДК, коды по которым уже существуют записи
-                List<DkCode> existingDkCodesOnKekv = tc.TenderPlanRecords.Where(p => (p.EstimateId == selectedEstimate.Id) && (p.PrimaryKekv.Id == selectedMainKekv.Kekv.Id)).Select(p => p.Dk).ToList();
-                dkCodesCBList.DataSource = allDkCodesList.Except(existingDkCodesOnKekv).ToList();
+                // Исключаем из списка кодов ДК, коды по которым уже существуют записи 
+                List<DkCode> existingDkCodesOnKekv = tc.TenderPlanRecords.Where(p => p.Estimate.TenderYearId == year.Id).Select(p => p.Dk).Distinct().ToList();
+                if (!isCodeRepeatCheckBox.Checked)
+                {
+                    dkCodesCBList.DataSource = allDkCodesList.Except(existingDkCodesOnKekv).ToList();
+                }
+                // ... либо выбираем только существующие
+                else
+                {
+                    dkCodesCBList.DataSource = existingDkCodesOnKekv;
+                }
                 dkCodesCBList.DisplayMember = "FullName";
                 dkCodesCBList.ValueMember = "Id";
                 dkCodesCBList.Refresh();
@@ -149,6 +197,7 @@ namespace ZcrlTender
         public AddEditTPRecordForm(TenderPlanRecord tenderPlanRecord)
         {
             InitializeComponent();
+            LoadProcedureTypesCBList();
 
             button1.Visible = UserSession.IsAuthorized;
 
@@ -163,12 +212,16 @@ namespace ZcrlTender
 
             dbWasChanged = false;
 
-            this.Text = "Редагування запису в річному плані";
-
             using(TenderContext tc = new TenderContext())
             {
                 tc.TenderPlanRecords.Attach(tenderPlanRecord);
                 planRecord = tenderPlanRecord;
+                this.year = tenderPlanRecord.Estimate.Year;
+                InitializeControls();
+
+                relatedFiles.Clear();
+                foreach (var item in planRecord.RelatedFiles)
+                    relatedFiles.Add(item);
 
                 // Получаем поступления на КЕКВ по смете
                 decimal maxMoneyOnKekv = (from rec in tc.BalanceChanges.ToList()
@@ -182,13 +235,11 @@ namespace ZcrlTender
                 decimal moneyOnOtherRecords = (from rec in tc.TenderPlanRecords.ToList()
                                                where (rec.PrimaryKekvId == planRecord.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId)
                                                group rec by rec.PrimaryKekvId into g1
-                                               select g1.Sum(p => p.Sum)).FirstOrDefault();
+                                               select g1.Sum(p => p.UsedByRecordSum)).FirstOrDefault();
 
                 // Деньги занятые договорами
-                decimal kekvMoneyOnContracts = (from rec in tc.Contracts.ToList()
-                                                where (rec.PrimaryKekvId == rec.PrimaryKekvId) && (rec.EstimateId == planRecord.EstimateId) && (rec.DkCodeId == planRecord.DkCodeId)
-                                                group rec by rec.PrimaryKekvId into g1
-                                                select g1.Sum(p => p.Sum)).FirstOrDefault();
+                decimal kekvMoneyOnContracts = planRecord.RegisteredContracts.Sum(p => p.Sum);
+
                 if (kekvMoneyOnContracts > 0)
                 {
                     label6.Visible = true;
@@ -199,6 +250,13 @@ namespace ZcrlTender
                 maxMoneyOnKekv -= moneyOnOtherRecords;
                 moneyRemainLabel.Text = string.Format("Вільні (нерозподілені) кошти: {0:N2} грн.", maxMoneyOnKekv);
 
+                procedureTypeCBList.SelectedValue = (int)planRecord.ProcedureType;
+                protocolDate.Value = planRecord.ProtocolDate;
+                protocolNum.Text = planRecord.ProtocolNum;
+                tenderBeginDate.Value = planRecord.TenderBeginDate;
+                isCodeRepeatCheckBox.Checked = codeRepeatReasonTextBox.Enabled = (planRecord.CodeRepeatReason != null);
+                codeRepeatReasonTextBox.Text = planRecord.CodeRepeatReason;
+                isProcedureComplete.Checked = planRecord.IsTenderComplete;
                 estimatesCBList.DataSource = new List<Estimate> { planRecord.Estimate };
                 estimatesCBList.DisplayMember = "Name";
                 mainKekv.DataSource = new List<KekvRemain> { new KekvRemain { Kekv = planRecord.PrimaryKekv } };
@@ -206,13 +264,15 @@ namespace ZcrlTender
                 mainKekv.DisplayMember = altKekv.DisplayMember = "Kekv";
                 dkCodesCBList.DataSource = new List<DkCode> { planRecord.Dk };
                 conctretePlanItemName.Text = planRecord.ConcreteName;
-                dkCodeSum.Value = planRecord.Sum;
+                dkCodeSum.Value = planRecord.PlannedSum;
 
                 // Устанавливаем допустимые границы измененния средств на коде
                 dkCodeSum.Minimum = kekvMoneyOnContracts;
-                dkCodeSum.Maximum = maxMoneyOnKekv + planRecord.Sum;
+                dkCodeSum.Maximum = maxMoneyOnKekv + planRecord.PlannedSum;
 
-                estimatesCBList.Enabled = mainKekv.Enabled = altKekv.Enabled = dkCodesCBList.Enabled = false;
+                estimatesCBList.Enabled = mainKekv.Enabled = altKekv.Enabled 
+                    = dkCodesCBList.Enabled = procedureTypeCBList.Enabled  
+                    = isCodeRepeatCheckBox.Enabled = codeRepeatReasonTextBox.Enabled = false;
             }
         }
 
@@ -236,7 +296,7 @@ namespace ZcrlTender
                 return;
             }
 
-            if (dkCodeSum.Value == 0)
+            if (dkCodeSum.Value == 0 && planRecord == null)
             {
                 NotificationHelper.ShowError("Сума повинна бути більша за 0");
                 return;
@@ -251,6 +311,12 @@ namespace ZcrlTender
             if(dkCodesCBList.SelectedItem == null)
             {
                 NotificationHelper.ShowError("Ви не вибрали код за ДК");
+                return;
+            }
+
+            if(isCodeRepeatCheckBox.Checked && string.IsNullOrWhiteSpace(codeRepeatReasonTextBox.Text))
+            {
+                NotificationHelper.ShowError("Ви не вказали причину створення ще одного запису з існуючим кодом");
                 return;
             }
 
@@ -291,12 +357,22 @@ namespace ZcrlTender
                 planRecord.PrimaryKekvId = selectedPrimaryKekv.Id;
                 planRecord.SecondaryKekvId = selectedAltKekv.Id;
                 planRecord.DateOfCreating = planRecord.DateOfLastChange = DateTime.Now;
+                planRecord.ProcedureType = (ProcedureType)procedureTypeCBList.SelectedValue;
+
+                if(isCodeRepeatCheckBox.Checked)
+                {
+                    planRecord.CodeRepeatReason = codeRepeatReasonTextBox.Text.Trim();
+                }
             }
 
             decimal changeOfSum = dkCodeSum.Value;
-            planRecord.Sum = dkCodeSum.Value;
+            planRecord.IsTenderComplete = isProcedureComplete.Checked;
+            planRecord.TenderBeginDate = tenderBeginDate.Value;
+            planRecord.PlannedSum = dkCodeSum.Value;
             planRecord.ConcreteName = conctretePlanItemName.Text;
             planRecord.DateOfLastChange = DateTime.Now;
+            planRecord.ProtocolNum = protocolNum.Text.Trim();
+            planRecord.ProtocolDate = protocolDate.Value;
             
             TenderPlanRecordChange tpChange = new TenderPlanRecordChange();
             if (!string.IsNullOrWhiteSpace(actionDescription))
@@ -325,6 +401,8 @@ namespace ZcrlTender
                 }
                 tc.SaveChanges();
 
+                FileManager.UpdateRelatedFilesOfEntity(tc, planRecord.RelatedFiles, relatedFiles, deletingFiles);
+
                 planRecord.Changes.Add(tpChange);
                 tc.TenderPlanRecordChanges.Add(tpChange);
                 tc.SaveChanges();
@@ -341,6 +419,12 @@ namespace ZcrlTender
             {
                 LoadKekvsOnEstimate(estimatesCBList.SelectedItem as Estimate);
             }
+        }
+
+        private void isCodeRepeatCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            codeRepeatReasonTextBox.Enabled = isCodeRepeatCheckBox.Checked;
+            LoadDkCodeList();
         }
     }
 }

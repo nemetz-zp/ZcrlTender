@@ -83,7 +83,7 @@ namespace ZcrlTender
                 {
                     invoiceFullSum.Maximum = invoiceRecord.Sum;
                 }
-                estimateNameLabel.Text = invoiceRecord.Contract.Estimate.Name;
+                estimateNameLabel.Text = invoiceRecord.Contract.RecordInPlan.Estimate.Name;
 
                 LoadMoneyRemains();
 
@@ -158,7 +158,7 @@ namespace ZcrlTender
             {
                 sourcesList = tc.MoneySources.ToList();
                 contractorsCBList.DataSource = tc.Contracts.ToList()
-                    .Where(p => (p.Estimate.TenderYearId == year.Id) && (p.Status == ContractStatus.Active))
+                    .Where(p => (p.RecordInPlan.Estimate.TenderYearId == year.Id) && (p.Status == ContractStatus.Active))
                     .Select(p => p.Contractor).Distinct()
                     .ToList();
                 contractorsCBList.ValueMember = "Id";
@@ -291,9 +291,9 @@ namespace ZcrlTender
             Contractor selectedContractor = e.Argument as Contractor;
             using (TenderContext tc = new TenderContext())
             {
-                List<Contract> contractsList = tc.Contracts.Include(p => p.Estimate).ToList()
+                List<Contract> contractsList = tc.Contracts.Include(p => p.RecordInPlan.Estimate).ToList()
                             .Where(p => (p.ContractorId == selectedContractor.Id)
-                                    && (p.Estimate.TenderYearId == year.Id))
+                                    && (p.RecordInPlan.Estimate.TenderYearId == year.Id))
                             .Select(p => p).ToList(); ;
                 
                 if (invoiceRecord.Id == 0)
@@ -337,7 +337,7 @@ namespace ZcrlTender
                     invoiceFullSum.Maximum = contractsRemains[selectedContractIndex] + invoiceRecord.Sum;
                 }
 
-                estimateNameLabel.Text = contractsList[selectedContractIndex].Estimate.Name;
+                estimateNameLabel.Text = contractsList[selectedContractIndex].RecordInPlan.Estimate.Name;
 
                 Contract selectedContract = contractsCBList.SelectedItem as Contract;
                 if (invoiceDate.Value < selectedContract.BeginDate)
@@ -371,8 +371,8 @@ namespace ZcrlTender
                 foreach(var source in sourcesList)
                 {
                     decimal remain = tc.BalanceChanges
-                        .Where(p => (p.EstimateId == arg.Contract.EstimateId)
-                            && (p.PrimaryKekvId == arg.Contract.PrimaryKekvId)
+                        .Where(p => (p.EstimateId == arg.Contract.RecordInPlan.EstimateId)
+                            && (p.PrimaryKekvId == arg.Contract.RecordInPlan.PrimaryKekvId)
                         && (p.DateOfReceiving <= arg.InvoiceDate)
                         && (p.MoneySourceId == source.Id)).Select(p => p.PrimaryKekvSum).DefaultIfEmpty(0).Sum();
 
@@ -380,7 +380,7 @@ namespace ZcrlTender
                     {
                         var rec = tc.BalanceChanges
                             .Where(p => (p.InvoiceId == invoiceRecord.Id) 
-                                && (p.EstimateId == arg.Contract.EstimateId) 
+                                && (p.EstimateId == arg.Contract.RecordInPlan.EstimateId) 
                                 && (p.MoneySourceId == source.Id)).FirstOrDefault();
                        
                         if(rec != null)
@@ -563,10 +563,10 @@ namespace ZcrlTender
                         {
                             DateOfReceiving = invoiceRecord.Date,
                             MoneySourceId = sourcesList[i].Id,
-                            PrimaryKekvId = selectedContract.PrimaryKekvId,
-                            SecondaryKekvId = selectedContract.SecondaryKekvId,
-                            EstimateId = selectedContract.EstimateId,
-                            DkCodeId = selectedContract.DkCodeId,
+                            PrimaryKekvId = selectedContract.RecordInPlan.PrimaryKekvId,
+                            SecondaryKekvId = selectedContract.RecordInPlan.SecondaryKekvId,
+                            EstimateId = selectedContract.RecordInPlan.EstimateId,
+                            DkCodeId = selectedContract.RecordInPlan.DkCodeId,
                             PrimaryKekvSum = -balanceChangeOnSource,
                             SecondaryKekvSum = -balanceChangeOnSource,
                         });

@@ -181,6 +181,7 @@
             this.yearPlanLoadingPicture = new System.Windows.Forms.PictureBox();
             this.contractsTPRecordButton = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.highlightSameCodesRowsCheckBox = new System.Windows.Forms.CheckBox();
             this.tpShowNullCodesChBox = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -225,7 +226,6 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.moneyRemainsloadingPicture = new System.Windows.Forms.PictureBox();
             this.оПрограміToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.highlightSameCodesRowsCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsTable)).BeginInit();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plannedSpendingLoadingPicture)).BeginInit();
@@ -1121,6 +1121,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.contractsLoadingPicture);
             this.tabPage3.Controls.Add(this.contractsFullSumLabel);
             this.tabPage3.Controls.Add(this.contractsRemainSumLabel);
             this.tabPage3.Controls.Add(this.label28);
@@ -1133,7 +1134,6 @@
             this.tabPage3.Controls.Add(this.newContractButton);
             this.tabPage3.Controls.Add(this.contractsLoadingLabel);
             this.tabPage3.Controls.Add(this.contractsTable);
-            this.tabPage3.Controls.Add(this.contractsLoadingPicture);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Size = new System.Drawing.Size(989, 375);
@@ -1442,7 +1442,7 @@
             this.contractsTable.RowHeadersVisible = false;
             this.contractsTable.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.contractsTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.contractsTable.Size = new System.Drawing.Size(863, 222);
+            this.contractsTable.Size = new System.Drawing.Size(863, 229);
             this.contractsTable.TabIndex = 1;
             // 
             // Column2
@@ -1599,6 +1599,17 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Фільтр за критеріями";
             // 
+            // highlightSameCodesRowsCheckBox
+            // 
+            this.highlightSameCodesRowsCheckBox.AutoSize = true;
+            this.highlightSameCodesRowsCheckBox.Location = new System.Drawing.Point(688, 50);
+            this.highlightSameCodesRowsCheckBox.Name = "highlightSameCodesRowsCheckBox";
+            this.highlightSameCodesRowsCheckBox.Size = new System.Drawing.Size(258, 17);
+            this.highlightSameCodesRowsCheckBox.TabIndex = 19;
+            this.highlightSameCodesRowsCheckBox.Text = "Виділяти записи з однаковими кодами за ДК";
+            this.highlightSameCodesRowsCheckBox.UseVisualStyleBackColor = true;
+            this.highlightSameCodesRowsCheckBox.CheckedChanged += new System.EventHandler(this.highlightSameCodesRowsCheckBox_CheckedChanged);
+            // 
             // tpShowNullCodesChBox
             // 
             this.tpShowNullCodesChBox.AutoSize = true;
@@ -1644,7 +1655,7 @@
             this.tpEstimateCBList.FormattingEnabled = true;
             this.tpEstimateCBList.Location = new System.Drawing.Point(78, 21);
             this.tpEstimateCBList.Name = "tpEstimateCBList";
-            this.tpEstimateCBList.Size = new System.Drawing.Size(353, 21);
+            this.tpEstimateCBList.Size = new System.Drawing.Size(542, 21);
             this.tpEstimateCBList.TabIndex = 5;
             // 
             // tpNewSystemRButton
@@ -1663,7 +1674,7 @@
             // 
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.linkLabel1.Location = new System.Drawing.Point(437, 24);
+            this.linkLabel1.Location = new System.Drawing.Point(626, 24);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(121, 13);
             this.linkLabel1.TabIndex = 6;
@@ -2115,17 +2126,6 @@
             this.оПрограміToolStripMenuItem.Name = "оПрограміToolStripMenuItem";
             this.оПрограміToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             this.оПрограміToolStripMenuItem.Text = "О програмі";
-            // 
-            // highlightSameCodesRowsCheckBox
-            // 
-            this.highlightSameCodesRowsCheckBox.AutoSize = true;
-            this.highlightSameCodesRowsCheckBox.Location = new System.Drawing.Point(688, 50);
-            this.highlightSameCodesRowsCheckBox.Name = "highlightSameCodesRowsCheckBox";
-            this.highlightSameCodesRowsCheckBox.Size = new System.Drawing.Size(258, 17);
-            this.highlightSameCodesRowsCheckBox.TabIndex = 19;
-            this.highlightSameCodesRowsCheckBox.Text = "Виділяти записи з однаковими кодами за ДК";
-            this.highlightSameCodesRowsCheckBox.UseVisualStyleBackColor = true;
-            this.highlightSameCodesRowsCheckBox.CheckedChanged += new System.EventHandler(this.highlightSameCodesRowsCheckBox_CheckedChanged);
             // 
             // MainProgramForm
             // 

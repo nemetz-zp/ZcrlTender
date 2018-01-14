@@ -271,7 +271,7 @@ namespace ZcrlTender.ExcelReports
                 xlWorksheet.get_Range(dateCell).Value = string.Format("Інформація станом на {0} року", DateTime.Now.ToShortDateString());
 
                 List<Invoice> newInvoices = (from rec in tc.Invoices.ToList()
-                                             where ((rec.Contract.Estimate.TenderYearId == year.Id) && (rec.Status == PaymentStatus.New))
+                                             where ((rec.Contract.RecordInPlan.Estimate.TenderYearId == year.Id) && (rec.Status == PaymentStatus.New))
                                              orderby rec.IsCredit descending
                                              select rec).ToList();
                 

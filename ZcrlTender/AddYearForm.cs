@@ -25,6 +25,7 @@ namespace ZcrlTender
         public AddYearForm()
         {
             InitializeComponent();
+            yearValue.Value = Convert.ToDecimal(DateTime.Now.Year);
             yearWasAdded = false;
         }
 
@@ -39,7 +40,7 @@ namespace ZcrlTender
                 tc.SaveChanges();
                 yearWasAdded = true;
 
-                NotificationHelper.ShowInfo("Рік успішно додано!");
+                //NotificationHelper.ShowInfo("Рік успішно додано!");
                 this.Close();
             }
         }

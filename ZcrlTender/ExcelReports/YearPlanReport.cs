@@ -11,37 +11,44 @@ namespace ZcrlTender.ExcelReports
 {
     public class YearPlanReport : ExcelReportMaker
     {
-        private Estimate est;
         private TenderYear year;
-        private bool isNewSystem;
         private string yearCell = "A3";
         private string dateCell = "A6";
         private string estimateNameCell = "A4";
         private string numColumnLetter = "A";
         private string dkCodeColumnLetter = "B";
-        private string plannedMoneyColumnLetter = "C";
-        private string registedByContractsMoneyColumnLetter = "D";
-        private string usedByContractsMoneyColumnLetter = "E";
-        private string contractRemainColumnLetter = "F";
-        private string dkCodeRemainColumnLetter = "G";
+        private string procedureNameColumnLetter = "C";
+        private string plannedPeriodColumnLetter = "D";
+        private string plannedMoneyColumnLetter = "E";
+        private string registedByContractsMoneyColumnLetter = "F";
+        private string usedByContractsMoneyColumnLetter = "G";
+        private string contractRemainColumnLetter = "H";
+        private string dkCodeRemainColumnLetter = "I";
         private int beginRowNumber = 8;
         private int currentRowNumber = 8;
+
+        // Критерии отбора записей в годовом плане
+        private Estimate estFilter;
+        private KekvCode kekvFilter;
+        private bool isNewSystem;
 
         private List<string> dkCodesInKekv = new List<string>();
         private List<string> kekvsList = new List<string>();
         private List<int> kekvsHeaders = new List<int>();
 
-        public YearPlanReport(Estimate est, bool isNewSystem)
-        {
-            this.est = est;
-            this.year = est.Year;
-            this.isNewSystem = isNewSystem;
-        }
+        private string[] monthes = { 
+                                       "Січень", "Лютий", "Березень",
+                                       "Квітень", "Травень", "Червень",
+                                       "Липень", "Серпень", "Вересень",
+                                       "Жовтень", "Листопад", "Грудень"
+                                   };
 
-        public YearPlanReport(TenderYear year, bool isNewSystem)
+        public YearPlanReport(TenderYear year, Estimate est, bool isNewSystem, KekvCode kekv)
         {
             this.year = year;
+            this.estFilter = est;
             this.isNewSystem = isNewSystem;
+            this.kekvFilter = kekv;
         }
 
         protected override string TemplateFile
@@ -62,25 +69,19 @@ namespace ZcrlTender.ExcelReports
 
         protected override void WriteDataToFile()
         {
-            List<TenderPlanItemsTableEntry> planRecords = null;
-            List<TenderPlanItemsTableEntry> contractsMoney = null;
             List<TenderPlanItemsTableEntry> resultList = null;
 
             List<TenderPlanRecord> allPlanRecords = null;
-            List<Contract> allContracts = null;
 
             using(TenderContext tc = new TenderContext())
             {
                 string estimateName = string.Empty;
-                if (est != null)
+                if (estFilter.Id > 0)
                 {
-                    estimateName = est.Name;
+                    estimateName = estFilter.Name;
                     allPlanRecords = (from r in tc.TenderPlanRecords
-                                      where r.EstimateId == est.Id
+                                      where r.EstimateId == estFilter.Id
                                       select r).ToList();
-                    allContracts = (from r in tc.Contracts
-                                    where r.EstimateId == est.Id
-                                    select r).ToList();
                 }
                 else
                 {
@@ -88,9 +89,6 @@ namespace ZcrlTender.ExcelReports
                     allPlanRecords = (from r in tc.TenderPlanRecords
                                       where r.Estimate.TenderYearId == year.Id
                                       select r).ToList();
-                    allContracts = (from r in tc.Contracts
-                                    where r.Estimate.TenderYearId == year.Id
-                                    select r).ToList();
                 }
 
                 xlWorksheet.get_Range(yearCell).Value = string.Format("на {0} рік", year.Year);
@@ -99,65 +97,48 @@ namespace ZcrlTender.ExcelReports
 
                 if (isNewSystem)
                 {
-                    planRecords = (from r in allPlanRecords.ToList()
+                    resultList = (from r in allPlanRecords.ToList()
                                    select new TenderPlanItemsTableEntry
                                    {
                                        Kekv = r.PrimaryKekv,
                                        Dk = r.Dk,
-                                       MoneyOnCode = r.Sum,
+                                       MoneyOnCode = r.PlannedSum,
                                        RelatedTenderPlanRecord = r,
-                                       Estimate = r.Estimate
+                                       Estimate = r.Estimate,
+                                       RegisteredByContracts = r.RegisteredContracts.Sum(p => p.Sum),
+                                       UsedByContracts = r.RegisteredContracts.Sum(p => p.UsedMoney),
+                                       ContractsMoneyRemain = r.RegisteredContracts.Sum(p => p.MoneyRemain)
                                    }).ToList();
-                    contractsMoney = (from c in allContracts.ToList()
-                                      group c by new { c.Estimate, c.PrimaryKekv, c.Dk } into g1
-                                      select new TenderPlanItemsTableEntry
-                                      {
-                                          Kekv = g1.Key.PrimaryKekv,
-                                          Dk = g1.Key.Dk,
-                                          Estimate = g1.Key.Estimate,
-                                          RegisteredByContracts = g1.Sum(p => p.Sum),
-                                          ContractsMoneyRemain = g1.Sum(p => p.MoneyRemain),
-                                          UsedByContracts = g1.Sum(p => p.UsedMoney)
-                                      }).ToList();
                 }
                 else
                 {
-                    planRecords = (from r in allPlanRecords
+                    resultList = (from r in allPlanRecords
                                    select new TenderPlanItemsTableEntry
                                    {
                                        Kekv = r.SecondaryKekv,
                                        Dk = r.Dk,
-                                       MoneyOnCode = r.Sum,
+                                       MoneyOnCode = r.PlannedSum,
                                        RelatedTenderPlanRecord = r,
-                                       Estimate = r.Estimate
+                                       Estimate = r.Estimate,
+                                       RegisteredByContracts = r.RegisteredContracts.Sum(p => p.Sum),
+                                       UsedByContracts = r.RegisteredContracts.Sum(p => p.UsedMoney),
+                                       ContractsMoneyRemain = r.RegisteredContracts.Sum(p => p.MoneyRemain)
                                    }).ToList();
-                    contractsMoney = (from c in allContracts
-                                      group c by new { c.Estimate, c.SecondaryKekv, c.Dk } into g1
-                                      select new TenderPlanItemsTableEntry
-                                      {
-                                          Kekv = g1.Key.SecondaryKekv,
-                                          Dk = g1.Key.Dk,
-                                          Estimate = g1.Key.Estimate,
-                                          RegisteredByContracts = g1.Sum(p => p.Sum),
-                                          ContractsMoneyRemain = g1.Sum(p => p.MoneyRemain),
-                                          UsedByContracts = g1.Sum(p => p.UsedMoney)
-                                      }).ToList();
                 }
 
-                resultList = (from p in planRecords
-                              join u in contractsMoney on new { p.Estimate, p.Kekv, p.Dk } equals new { u.Estimate, u.Kekv, u.Dk } into g2
-                              from t3 in g2.DefaultIfEmpty(new TenderPlanItemsTableEntry())
-                              select new TenderPlanItemsTableEntry
-                              {
-                                  RelatedTenderPlanRecord = p.RelatedTenderPlanRecord,
-                                  Kekv = p.Kekv,
-                                  Dk = p.Dk,
-                                  MoneyOnCode = p.MoneyOnCode,
-                                  Estimate = p.Estimate,
-                                  RegisteredByContracts = t3.RegisteredByContracts,
-                                  UsedByContracts = t3.UsedByContracts,
-                                  ContractsMoneyRemain = t3.ContractsMoneyRemain
-                              }).ToList();
+                if(kekvFilter.Id > 0)
+                {
+                    resultList = resultList.Where(p => p.Kekv.Id == kekvFilter.Id).ToList();
+                }
+
+                if(resultList.Count == 0)
+                {
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
+                        dkCodeRemainColumnLetter + currentRowNumber.ToString()).Merge();
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Font.Italic = true;
+                    xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = "Записи в річному плані відсутні";
+                }
 
                 var groupedByKekvResult = resultList.GroupBy(p => p.Kekv);
                 foreach(var kekv in groupedByKekvResult)
@@ -181,37 +162,40 @@ namespace ZcrlTender.ExcelReports
                             dkCodeRemainColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = (dkCodeNum + 1).ToString();
                         
-                        if(est != null)
+                        string dkCodeName = string.Format("{0} ({1})\n Затверджено протоколом № {2} від {3} року", 
+                            code.Dk.FullName, 
+                            code.RelatedTenderPlanRecord.ConcreteName, 
+                            code.RelatedTenderPlanRecord.ProtocolNum, 
+                            code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+                        if(code.RelatedTenderPlanRecord.CodeRepeatReason != null)
                         {
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = string.Format("{0} ({1})", code.Dk.FullName, code.RelatedTenderPlanRecord.ConcreteName);
+                            dkCodeName = string.Format("{0}\nОбгрунтування повторення коду: {1}", dkCodeName, code.RelatedTenderPlanRecord.CodeRepeatReason);
                         }
-                        else
-                        {
-                            string dkCodeName = string.Format("{0} ({1})\n({2})", code.Dk.FullName, code.RelatedTenderPlanRecord.ConcreteName, code.Estimate.Name);
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = dkCodeName;
-                            int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Size = 9;
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Italic = true;
-                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                                .get_Characters(estimateRowBeginIndex).Font.Bold = false;
-
-                        }
+                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = dkCodeName;
+                        int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
+                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Size = 9;
+                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Italic = true;
+                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                            .get_Characters(estimateRowBeginIndex).Font.Bold = false;
 
                         xlWorksheet.get_Range(plannedMoneyColumnLetter + currentRowNumber.ToString()).Value = code.MoneyOnCode;
+                        xlWorksheet.get_Range(procedureNameColumnLetter + currentRowNumber.ToString()).Value = TenderPlanRecord.GetProcedureName(code.RelatedTenderPlanRecord.ProcedureType);
+                        xlWorksheet.get_Range(plannedPeriodColumnLetter + currentRowNumber.ToString()).Value =
+                           string.Format("{0} {1} року", monthes[code.RelatedTenderPlanRecord.TenderBeginDate.Month - 1], code.RelatedTenderPlanRecord.TenderBeginDate.Year);
 
                         List<Contract> contractsOnCode = null;
 
                         if (isNewSystem)
                         {
                             contractsOnCode = tc.Contracts
-                                .Where(p => (p.DkCodeId == code.Dk.Id) && (p.PrimaryKekvId == code.Kekv.Id)).ToList();
+                                .Where(p => (p.RecordInPlan.DkCodeId == code.Dk.Id) && (p.RecordInPlan.PrimaryKekvId == code.Kekv.Id)).ToList();
                         }
                         else
                         {
                             contractsOnCode = tc.Contracts
-                                .Where(p => (p.DkCodeId == code.Dk.Id) && (p.SecondaryKekvId == code.Kekv.Id)).ToList();
+                                .Where(p => (p.RecordInPlan.DkCodeId == code.Dk.Id) && (p.RecordInPlan.SecondaryKekvId == code.Kekv.Id)).ToList();
                         }
 
                         int firstCodeContract = currentRowNumber + 1;

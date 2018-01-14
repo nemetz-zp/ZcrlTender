@@ -154,7 +154,7 @@ namespace ZcrlTender
                                        select new KekvMoneyRecord
                                        {
                                            Kekv = g1.Key,
-                                           Sum = g1.Sum(p => p.Sum)
+                                           Sum = g1.Sum(p => p.PlannedSum)
                                        }).ToList();
             }
         }

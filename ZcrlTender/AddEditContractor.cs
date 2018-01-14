@@ -57,6 +57,7 @@ namespace ZcrlTender
                 edrTextBox.Text = contractorRecord.EdrCode;
                 legalAdressTextBox.Text = contractorRecord.LegalAddress;
                 actualAdressTextBox.Text = contractorRecord.ActualAddress;
+                descriptionTextBox.Text = contractorRecord.Description;
 
                 relatedFiles.Clear();
                 foreach (var item in record.RelatedFiles)

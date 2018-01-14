@@ -67,7 +67,19 @@ namespace ZcrlTender
 
         private void dkCodesTable_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
+            DkCode selectedCode = dkCodesTable.SelectedRows[0].DataBoundItem as DkCode;
+            AddEditDkCodeForm af = new AddEditDkCodeForm(selectedCode);
+            af.ShowDialog();
 
+            if (af.WasDbUpdated)
+            {
+                using (TenderContext tc = new TenderContext())
+                {
+                    codesList = new BindingList<DkCode>(tc.DkCodes.ToList());
+                    dkCodesTable.DataSource = codesList;
+                }
+                wasDbUpdated = true;
+            }
         }
 
         private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

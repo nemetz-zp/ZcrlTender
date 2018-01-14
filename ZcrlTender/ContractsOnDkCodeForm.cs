@@ -31,42 +31,25 @@ namespace ZcrlTender
                 if(isNewSystemSelected)
                 {
                     kekvLabel.Text = record.PrimaryKekv.Code;
-                    tableEntries = (from rec in tc.Contracts.ToList()
-                                    where (rec.EstimateId == record.EstimateId) &&
-                                          (rec.DkCodeId == record.DkCodeId) &&
-                                          (rec.PrimaryKekvId == record.PrimaryKekvId)
-                                    orderby rec.SignDate descending
-                                    select new ContractsTableEntry 
-                                    {
-                                        ContractDate = rec.SignDate,
-                                        ContractNum = rec.Number,
-                                        Contractor = rec.Contractor,
-                                        Description = rec.Description,
-                                        FullSum = rec.Sum,
-                                        RelatedContract = rec,
-                                        UsedSum = rec.UsedMoney
-                                    }).ToList();
                 }
                 else
                 {
                     kekvLabel.Text = record.SecondaryKekv.Code + "(по старой системе)";
-                    tableEntries = (from rec in tc.Contracts
-                                    where (rec.EstimateId == record.EstimateId) &&
-                                          (rec.DkCodeId == record.DkCodeId) &&
-                                          (rec.SecondaryKekvId == record.SecondaryKekvId)
-                                    orderby rec.SignDate descending
-                                    select new ContractsTableEntry
-                                    {
-                                        ContractDate = rec.SignDate,
-                                        ContractNum = rec.Number,
-                                        Contractor = rec.Contractor,
-                                        Description = rec.Description,
-                                        FullSum = rec.Sum,
-                                        RelatedContract = rec,
-                                        UsedSum = rec.UsedMoney
-                                    }).ToList();
-
                 }
+
+                tableEntries = (from rec in tc.Contracts.ToList()
+                                where (rec.TenderPlanRecordId == record.Id)
+                                orderby rec.SignDate descending
+                                select new ContractsTableEntry
+                                {
+                                    ContractDate = rec.SignDate,
+                                    ContractNum = rec.Number,
+                                    Contractor = rec.Contractor,
+                                    Description = rec.Description,
+                                    FullSum = rec.Sum,
+                                    RelatedContract = rec,
+                                    UsedSum = rec.UsedMoney
+                                }).ToList();
 
                 contractsTable.DataSource = tableEntries;
             }
