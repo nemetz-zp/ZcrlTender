@@ -14,6 +14,7 @@ namespace ZcrlTender
     public partial class ContractorsListForm : Form
     {
         private BindingList<Contractor> contractorsList;
+        private BindingList<Contractor> filteredList;
         private bool wasDbUpdated;
 
         public bool WasDbUpdated
@@ -42,6 +43,8 @@ namespace ZcrlTender
                 contractorsList = new BindingList<Contractor>(tc.Contractors.ToList());
             }
             contractorsTable.DataSource = contractorsList;
+
+            textBox1.TextChanged += (sender, e) => FilterList();
         }
 
         private void estimateTable_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
@@ -89,11 +92,16 @@ namespace ZcrlTender
         private void reloadContractorsListWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             List<Contractor> contractors = e.Result as List<Contractor>;
-            
+
             contractorsList.Clear();
             foreach (var item in contractors)
                 contractorsList.Add(item);
             ToggleLoadAnimation();
+
+            if (!string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                FilterList();
+            }
         }
 
         private void deleteContractorButton_Click(object sender, EventArgs e)
@@ -149,6 +157,22 @@ namespace ZcrlTender
         private void contractorsTable_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             editContractorButton_Click(sender, null);
+        }
+
+        private void FilterList()
+        {
+            string contractorName = textBox1.Text.Trim().ToLower();
+            if (string.IsNullOrWhiteSpace(contractorName))
+            {
+                contractorsTable.DataSource = contractorsList;
+            }
+            else
+            {
+                filteredList = new BindingList<Contractor>(contractorsList.Where(p => p.ShortName
+                                                                .ToLower()
+                                                                .Contains(contractorName)).ToList());
+                contractorsTable.DataSource = filteredList;
+            }
         }
     }
 }
