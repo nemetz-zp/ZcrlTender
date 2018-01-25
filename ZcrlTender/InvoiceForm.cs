@@ -156,7 +156,7 @@ namespace ZcrlTender
 
             using (TenderContext tc = new TenderContext())
             {
-                sourcesList = tc.MoneySources.ToList();
+                sourcesList = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
                 contractorsCBList.DataSource = tc.Contracts.ToList()
                     .Where(p => (p.RecordInPlan.Estimate.TenderYearId == year.Id) && (p.Status == ContractStatus.Active))
                     .Select(p => p.Contractor).Distinct()
@@ -566,7 +566,6 @@ namespace ZcrlTender
                             PrimaryKekvId = selectedContract.RecordInPlan.PrimaryKekvId,
                             SecondaryKekvId = selectedContract.RecordInPlan.SecondaryKekvId,
                             EstimateId = selectedContract.RecordInPlan.EstimateId,
-                            DkCodeId = selectedContract.RecordInPlan.DkCodeId,
                             PrimaryKekvSum = -balanceChangeOnSource,
                             SecondaryKekvSum = -balanceChangeOnSource,
                         });

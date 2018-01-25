@@ -36,11 +36,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tenderPlanTable = new System.Windows.Forms.DataGridView();
-            this.KekvColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DkCodeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.PlannedSumColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ContractsSumColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.UsedByContractsColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.recordsLoader = new System.ComponentModel.BackgroundWorker();
             this.yearPlanLoadingPicture = new System.Windows.Forms.PictureBox();
             this.yearPlanLoadingLabel = new System.Windows.Forms.Label();
@@ -52,6 +47,11 @@
             this.tpNewSystemRButton = new System.Windows.Forms.RadioButton();
             this.tpKekvsCBList = new System.Windows.Forms.ComboBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.KekvColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DkCodeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.PlannedSumColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ContractsSumColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.UsedByContractsColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.tenderPlanTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.yearPlanLoadingPicture)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -95,67 +95,9 @@
             this.tenderPlanTable.RowHeadersVisible = false;
             this.tenderPlanTable.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tenderPlanTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.tenderPlanTable.Size = new System.Drawing.Size(765, 312);
+            this.tenderPlanTable.Size = new System.Drawing.Size(823, 312);
             this.tenderPlanTable.TabIndex = 2;
             this.tenderPlanTable.SelectionChanged += new System.EventHandler(this.tenderPlanTable_SelectionChanged);
-            // 
-            // KekvColumn
-            // 
-            this.KekvColumn.DataPropertyName = "Kekv";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.KekvColumn.DefaultCellStyle = dataGridViewCellStyle2;
-            this.KekvColumn.HeaderText = "КЕКВ";
-            this.KekvColumn.Name = "KekvColumn";
-            this.KekvColumn.ReadOnly = true;
-            this.KekvColumn.Width = 60;
-            // 
-            // DkCodeColumn
-            // 
-            this.DkCodeColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.DkCodeColumn.DataPropertyName = "Dk";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.DkCodeColumn.DefaultCellStyle = dataGridViewCellStyle3;
-            this.DkCodeColumn.HeaderText = "Код за ДК";
-            this.DkCodeColumn.Name = "DkCodeColumn";
-            this.DkCodeColumn.ReadOnly = true;
-            // 
-            // PlannedSumColumn
-            // 
-            this.PlannedSumColumn.DataPropertyName = "PlannedMoney";
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.Format = "N2";
-            dataGridViewCellStyle4.NullValue = null;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.PlannedSumColumn.DefaultCellStyle = dataGridViewCellStyle4;
-            this.PlannedSumColumn.HeaderText = "Запланована сума";
-            this.PlannedSumColumn.Name = "PlannedSumColumn";
-            this.PlannedSumColumn.ReadOnly = true;
-            // 
-            // ContractsSumColumn
-            // 
-            this.ContractsSumColumn.DataPropertyName = "MoneyRemain";
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.Format = "N2";
-            dataGridViewCellStyle5.NullValue = null;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ContractsSumColumn.DefaultCellStyle = dataGridViewCellStyle5;
-            this.ContractsSumColumn.HeaderText = "Залишок для реєстрації";
-            this.ContractsSumColumn.Name = "ContractsSumColumn";
-            this.ContractsSumColumn.ReadOnly = true;
-            // 
-            // UsedByContractsColumn
-            // 
-            this.UsedByContractsColumn.DataPropertyName = "Commentary";
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.NullValue = null;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.UsedByContractsColumn.DefaultCellStyle = dataGridViewCellStyle6;
-            this.UsedByContractsColumn.HeaderText = "Примітка";
-            this.UsedByContractsColumn.Name = "UsedByContractsColumn";
-            this.UsedByContractsColumn.ReadOnly = true;
-            this.UsedByContractsColumn.Width = 200;
             // 
             // recordsLoader
             // 
@@ -198,7 +140,7 @@
             this.groupBox3.Controls.Add(this.tpKekvsCBList);
             this.groupBox3.Location = new System.Drawing.Point(7, 8);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(868, 78);
+            this.groupBox3.Size = new System.Drawing.Size(926, 78);
             this.groupBox3.TabIndex = 21;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Фільтр за критеріями";
@@ -265,18 +207,78 @@
             // button1
             // 
             this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(778, 92);
+            this.button1.Location = new System.Drawing.Point(836, 92);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(97, 23);
             this.button1.TabIndex = 22;
             this.button1.Text = "Вибрати";
             this.button1.UseVisualStyleBackColor = true;
             // 
+            // KekvColumn
+            // 
+            this.KekvColumn.DataPropertyName = "Kekv";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.KekvColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.KekvColumn.HeaderText = "КЕКВ";
+            this.KekvColumn.Name = "KekvColumn";
+            this.KekvColumn.ReadOnly = true;
+            this.KekvColumn.Width = 60;
+            // 
+            // DkCodeColumn
+            // 
+            this.DkCodeColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.DkCodeColumn.DataPropertyName = "Dk";
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DkCodeColumn.DefaultCellStyle = dataGridViewCellStyle3;
+            this.DkCodeColumn.HeaderText = "Код за ДК";
+            this.DkCodeColumn.Name = "DkCodeColumn";
+            this.DkCodeColumn.ReadOnly = true;
+            // 
+            // PlannedSumColumn
+            // 
+            this.PlannedSumColumn.DataPropertyName = "PlannedMoney";
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.Format = "N2";
+            dataGridViewCellStyle4.NullValue = null;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.PlannedSumColumn.DefaultCellStyle = dataGridViewCellStyle4;
+            this.PlannedSumColumn.HeaderText = "Запланована сума";
+            this.PlannedSumColumn.Name = "PlannedSumColumn";
+            this.PlannedSumColumn.ReadOnly = true;
+            this.PlannedSumColumn.Width = 120;
+            // 
+            // ContractsSumColumn
+            // 
+            this.ContractsSumColumn.DataPropertyName = "MoneyRemain";
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.Format = "N2";
+            dataGridViewCellStyle5.NullValue = null;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ContractsSumColumn.DefaultCellStyle = dataGridViewCellStyle5;
+            this.ContractsSumColumn.HeaderText = "Доступно для реєстрації договору";
+            this.ContractsSumColumn.Name = "ContractsSumColumn";
+            this.ContractsSumColumn.ReadOnly = true;
+            this.ContractsSumColumn.Width = 120;
+            // 
+            // UsedByContractsColumn
+            // 
+            this.UsedByContractsColumn.DataPropertyName = "Commentary";
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.NullValue = null;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.UsedByContractsColumn.DefaultCellStyle = dataGridViewCellStyle6;
+            this.UsedByContractsColumn.HeaderText = "Примітка";
+            this.UsedByContractsColumn.Name = "UsedByContractsColumn";
+            this.UsedByContractsColumn.ReadOnly = true;
+            this.UsedByContractsColumn.Width = 200;
+            // 
             // TenderPlanRecordSelectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(887, 404);
+            this.ClientSize = new System.Drawing.Size(945, 404);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.yearPlanLoadingPicture);
@@ -302,11 +304,6 @@
         #endregion
 
         private System.Windows.Forms.DataGridView tenderPlanTable;
-        private System.Windows.Forms.DataGridViewTextBoxColumn KekvColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn DkCodeColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn PlannedSumColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ContractsSumColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn UsedByContractsColumn;
         private System.ComponentModel.BackgroundWorker recordsLoader;
         private System.Windows.Forms.PictureBox yearPlanLoadingPicture;
         private System.Windows.Forms.Label yearPlanLoadingLabel;
@@ -318,5 +315,10 @@
         private System.Windows.Forms.RadioButton tpNewSystemRButton;
         private System.Windows.Forms.ComboBox tpKekvsCBList;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn KekvColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DkCodeColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn PlannedSumColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ContractsSumColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn UsedByContractsColumn;
     }
 }

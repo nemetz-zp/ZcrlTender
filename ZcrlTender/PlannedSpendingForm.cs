@@ -178,14 +178,14 @@ namespace ZcrlTender
 
             using (TenderContext tc = new TenderContext())
             {
-                sourcesList = tc.MoneySources.ToList();
+                sourcesList = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
                 estimateCBList.DataSource = tc.Estimates
                     .Where(t => (t.TenderYearId == year.Id) && (t.Changes.Sum(p => p.PrimaryKekvSum) > 0))
                     .ToList();
 
                 Estimate selectedEstimate = estimateCBList.SelectedItem as Estimate;
 
-                altKekvCBList.DataSource = tc.KekvCodes.ToList();
+                altKekvCBList.DataSource = tc.KekvCodes.OrderBy(p => p.Code).ToList();
             }
 
             for (int i = 0; i <= sourcesList.Count; i++)

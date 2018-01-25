@@ -80,8 +80,8 @@ namespace ZcrlTender
 
             using (TenderContext tc = new TenderContext())
             {
-                kekvsList = tc.KekvCodes.ToList();
-                sourcesList = new BindingList<MoneySource>(tc.MoneySources.ToList());
+                kekvsList = tc.KekvCodes.OrderBy(p => p.Code).ToList();
+                sourcesList = new BindingList<MoneySource>(tc.MoneySources.OrderBy(p => p.ViewPriority).ToList());
             }
 
             moneySourceCBList.DataSource = sourcesList;

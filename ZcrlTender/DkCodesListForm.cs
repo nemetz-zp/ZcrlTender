@@ -44,7 +44,7 @@ namespace ZcrlTender
             using(TenderContext tc = new TenderContext())
             {
                 dkCodesTable.AutoGenerateColumns = false;
-                codesList = new BindingList<DkCode>(tc.DkCodes.ToList());
+                codesList = new BindingList<DkCode>(tc.DkCodes.OrderBy(p => p.Code).ToList());
                 dkCodesTable.DataSource = codesList;
             }
         }
@@ -58,7 +58,7 @@ namespace ZcrlTender
             {
                 using (TenderContext tc = new TenderContext())
                 {
-                    codesList = new BindingList<DkCode>(tc.DkCodes.ToList());
+                    codesList = new BindingList<DkCode>(tc.DkCodes.OrderBy(p => p.Code).ToList());
                     dkCodesTable.DataSource = codesList;
                 }
                 wasDbUpdated = true;
@@ -75,7 +75,7 @@ namespace ZcrlTender
             {
                 using (TenderContext tc = new TenderContext())
                 {
-                    codesList = new BindingList<DkCode>(tc.DkCodes.ToList());
+                    codesList = new BindingList<DkCode>(tc.DkCodes.OrderBy(p => p.Code).ToList());
                     dkCodesTable.DataSource = codesList;
                 }
                 wasDbUpdated = true;

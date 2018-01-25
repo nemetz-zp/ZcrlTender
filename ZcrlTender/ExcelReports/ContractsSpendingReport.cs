@@ -61,11 +61,19 @@ namespace ZcrlTender.ExcelReports
             {
                 if (estFilter != null)
                 {
-                    sources = tc.BalanceChanges.Where(p => p.EstimateId == estFilter.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
+                    sources = tc.BalanceChanges.Where(p => p.EstimateId == estFilter.Id)
+                        .GroupBy(p => p.MoneySource)
+                        .Select(p => p.Key)
+                        .OrderBy(p => p.ViewPriority)
+                        .ToList();
                 }
                 else
                 {
-                    sources = tc.BalanceChanges.Where(p => p.Estimate.TenderYearId == year.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
+                    sources = tc.BalanceChanges.Where(p => p.Estimate.TenderYearId == year.Id)
+                        .GroupBy(p => p.MoneySource)
+                        .Select(p => p.Key)
+                        .OrderBy(p => p.ViewPriority)
+                        .ToList();
                 }
 
                 sourcesNum = sources.Count;
@@ -216,7 +224,7 @@ namespace ZcrlTender.ExcelReports
                         {
                             currentRowNumber++;
                             xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
-                                contractRemainColumnLetter + currentRowNumber.ToString()).Font.Size = 11;
+                                contractRemainColumnLetter + currentRowNumber.ToString()).Font.Size = 10;
                             string invoiceName = string.Format("Рахунок/Акт № {0} від {1} року", invoice.Number, invoice.Date);
                             if(!string.IsNullOrWhiteSpace(invoice.Description))
                             {

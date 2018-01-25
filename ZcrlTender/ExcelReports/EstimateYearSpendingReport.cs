@@ -77,11 +77,19 @@ namespace ZcrlTender.ExcelReports
             {
                 if (est != null)
                 {
-                    sources = tc.BalanceChanges.Where(p => p.EstimateId == est.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
+                    sources = tc.BalanceChanges.Where(p => p.EstimateId == est.Id)
+                        .GroupBy(p => p.MoneySource)
+                        .Select(p => p.Key)
+                        .OrderBy(p => p.ViewPriority)
+                        .ToList();
                 }
                 else
                 {
-                    sources = tc.BalanceChanges.Where(p => p.Estimate.TenderYearId == year.Id).GroupBy(p => p.MoneySource).Select(p => p.Key).ToList();
+                    sources = tc.BalanceChanges.Where(p => p.Estimate.TenderYearId == year.Id)
+                        .GroupBy(p => p.MoneySource)
+                        .Select(p => p.Key)
+                        .OrderBy(p => p.ViewPriority)
+                        .ToList();
                 }
 
                 sourcesNum = sources.Count;
@@ -345,6 +353,7 @@ namespace ZcrlTender.ExcelReports
                     month.KekvRows = (from item in allSpendings.Union(kekvsWithRemainOnMonthBegin)
                                       where (item.Date.Month == i)
                                       group item by item.Kekv into g1
+                                      orderby g1.Key.Code
                                       select new GroupedByKekvEstimateSpendingRow
                                       {
                                           Kekv = g1.Key,
@@ -698,7 +707,7 @@ namespace ZcrlTender.ExcelReports
                     WriteCaption(string.Format("ПІДСУМКОВА ІНФОРМАЦІЯ ЗА {0} РІК", year.Year));
 
                     // По КЕКВ
-                    foreach (var kekv in estimateKekvSpendingTotals.Keys)
+                    foreach (var kekv in estimateKekvSpendingTotals.Keys.OrderBy(p => p.Code))
                     {
                         string totalKekvSpendingFormula = "=SUM(" + string.Join(",", estimateKekvSpendingTotals[kekv]) + ")";
                         string totalPlannedKekvMoney = "=SUM(" + string.Join(",", estimateKekvPlannedMoneyTotals[kekv]) + ")";

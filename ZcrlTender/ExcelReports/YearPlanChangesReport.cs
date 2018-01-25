@@ -136,7 +136,7 @@ namespace ZcrlTender.ExcelReports
                 }
 
                 var groupedByKekvResult = planRecords.GroupBy(p => p.Kekv);
-                foreach (var kekv in groupedByKekvResult)
+                foreach (var kekv in groupedByKekvResult.OrderBy(p => p.Key.Code))
                 {
                     xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
                         plannedMoneyColumnLetter + currentRowNumber.ToString()).Merge();
@@ -158,24 +158,32 @@ namespace ZcrlTender.ExcelReports
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = (dkCodeNum + 1).ToString();
 
                         xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Font.Bold = true;
- 
-                        string dkCodeName = string.Format("{0} ({1})\n Затверджено протоколом № {2} від {3} року",
-                            code.Dk.FullName,
-                            code.RelatedTenderPlanRecord.ConcreteName,
-                            code.RelatedTenderPlanRecord.ProtocolNum,
-                            code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+
+                        string dkCodeName = string.Format("{0} ({1})", 
+                                code.Dk.FullName,
+                                code.RelatedTenderPlanRecord.ConcreteName);
+                        if (!string.IsNullOrWhiteSpace(code.RelatedTenderPlanRecord.ProtocolNum))
+                        {
+                            dkCodeName = string.Format("{0}\n Затверджено протоколом № {1} від {2} року",
+                                dkCodeName,
+                                code.RelatedTenderPlanRecord.ProtocolNum,
+                                code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+                        }
                         if (code.RelatedTenderPlanRecord.CodeRepeatReason != null)
                         {
                             dkCodeName = string.Format("{0}\nОбгрунтування повторення коду: {1}", dkCodeName, code.RelatedTenderPlanRecord.CodeRepeatReason);
                         }
                         xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Value = dkCodeName;
                         int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
-                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Size = 9;
-                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Italic = true;
-                        xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Bold = false;
+                        if (estimateRowBeginIndex > 0)
+                        {
+                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Size = 9;
+                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Italic = true;
+                            xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Bold = false;
+                        }
 
                         xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()).RowHeight = xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).RowHeight;
                         xlWorksheet.get_Range(freeCellLetter + currentRowNumber.ToString()).Cut(xlWorksheet.get_Range(dateOfCodeChangeColumnLetter + currentRowNumber.ToString()));

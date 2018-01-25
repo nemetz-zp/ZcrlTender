@@ -23,8 +23,13 @@ namespace ZcrlTender
             KekvCode k7 = new KekvCode { Code = "2272", Name = "Оплата водопостачання та водовідведення" };
             KekvCode k8 = new KekvCode { Code = "2273", Name = "Оплата електроенергії" };
             KekvCode k9 = new KekvCode { Code = "2274", Name = "Оплата природного газу" };
-            KekvCode k10 = new KekvCode { Code = "2282", Name = "Окремі заходи по реалізації державних (регіональних) програм, не віднесені до заходів розвитку" };
-            KekvCode k11 = new KekvCode { Code = "3110", Name = "Придбання обладнання і предметів довгострокового користування" };
+            KekvCode k10 = new KekvCode { Code = "2275", Name = "Оплата інших енергоносіїв" };
+            KekvCode k11 = new KekvCode { Code = "2281", Name = "Дослідження і розробки, окремі заходи розвитку по реалізації державних (регіональних) програм" };
+            KekvCode k12 = new KekvCode { Code = "2282", Name = "Окремі заходи по реалізації державних (регіональних) програм, не віднесені до заходів розвитку" };
+            KekvCode k13 = new KekvCode { Code = "2710", Name = "Виплата пенсій і допомоги" };
+            KekvCode k14 = new KekvCode { Code = "2730", Name = "Інші виплати населенню" };
+            KekvCode k15 = new KekvCode { Code = "2800", Name = "Інші поточні видатки" };
+            KekvCode k16 = new KekvCode { Code = "3110", Name = "Придбання обладнання і предметів довгострокового користування" };
 
             context.KekvCodes.Add(k1);
             context.KekvCodes.Add(k2);
@@ -37,15 +42,22 @@ namespace ZcrlTender
             context.KekvCodes.Add(k9);
             context.KekvCodes.Add(k10);
             context.KekvCodes.Add(k11);
+            context.KekvCodes.Add(k12);
+            context.KekvCodes.Add(k13);
+            context.KekvCodes.Add(k14);
+            context.KekvCodes.Add(k15);
+            context.KekvCodes.Add(k16);
             context.SaveChanges();
 
-            MoneySource ms1 = new MoneySource { Name = "Місцевий бюджет" };
-            MoneySource ms2 = new MoneySource { Name = "Медична субвенція" };
-            MoneySource ms3 = new MoneySource { Name = "Долинська субвенція" };
-            MoneySource ms4 = new MoneySource { Name = "Біленьківська субвенція" };
-            MoneySource ms5 = new MoneySource { Name = "Широківська субвенція" };
-            MoneySource ms6 = new MoneySource { Name = "Суми за дорученням" };
-            MoneySource ms7 = new MoneySource { Name = "Спецрахунок" };
+            int priority = 1;
+            MoneySource ms1 = new MoneySource { Name = "Місцевий бюджет", ViewPriority = priority++ };
+            MoneySource ms2 = new MoneySource { Name = "Додаткова дотація", ViewPriority = priority++ };
+            MoneySource ms3 = new MoneySource { Name = "Медична субвенція", ViewPriority = priority++ };
+            MoneySource ms4 = new MoneySource { Name = "Долинська субвенція", ViewPriority = priority++ };
+            MoneySource ms5 = new MoneySource { Name = "Біленьківська субвенція", ViewPriority = priority++ };
+            MoneySource ms6 = new MoneySource { Name = "Широківська субвенція", ViewPriority = priority++ };
+            MoneySource ms7 = new MoneySource { Name = "Суми за дорученням", ViewPriority = priority++ };
+            MoneySource ms8 = new MoneySource { Name = "Спецрахунок", ViewPriority = priority++ };
 
             context.MoneySources.Add(ms1);
             context.MoneySources.Add(ms2);
@@ -54,6 +66,7 @@ namespace ZcrlTender
             context.MoneySources.Add(ms5);
             context.MoneySources.Add(ms6);
             context.MoneySources.Add(ms7);
+            context.MoneySources.Add(ms8);
             context.SaveChanges();
 
             base.Seed(context);

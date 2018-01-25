@@ -79,6 +79,7 @@
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.basedOnNeed = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dkCodeSum)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -135,7 +136,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(246, 387);
+            this.button1.Location = new System.Drawing.Point(246, 426);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(90, 23);
             this.button1.TabIndex = 19;
@@ -239,12 +240,13 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.basedOnNeed);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.estimatesCBList);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Location = new System.Drawing.Point(8, 120);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(595, 94);
+            this.groupBox1.Size = new System.Drawing.Size(595, 120);
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Фінансування закупівлі";
@@ -266,7 +268,7 @@
             this.groupBox2.Controls.Add(this.moneyRemainLabel);
             this.groupBox2.Controls.Add(this.label7);
             this.groupBox2.Controls.Add(this.altKekv);
-            this.groupBox2.Location = new System.Drawing.Point(8, 218);
+            this.groupBox2.Location = new System.Drawing.Point(8, 260);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(595, 126);
             this.groupBox2.TabIndex = 32;
@@ -443,7 +445,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(622, 381);
+            this.tabControl1.Size = new System.Drawing.Size(622, 420);
             this.tabControl1.TabIndex = 36;
             // 
             // tabPage1
@@ -454,7 +456,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(614, 355);
+            this.tabPage1.Size = new System.Drawing.Size(614, 394);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Дані процедури";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -466,7 +468,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(614, 355);
+            this.tabPage2.Size = new System.Drawing.Size(614, 394);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Предмет закупівлі";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -479,7 +481,7 @@
             this.tabPage3.Controls.Add(this.linkLabel1);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(614, 355);
+            this.tabPage3.Size = new System.Drawing.Size(614, 394);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Долучені файли";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -538,7 +540,7 @@
             dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.filesTable.DefaultCellStyle = dataGridViewCellStyle5;
             this.filesTable.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.filesTable.Location = new System.Drawing.Point(0, 29);
+            this.filesTable.Location = new System.Drawing.Point(0, 25);
             this.filesTable.MultiSelect = false;
             this.filesTable.Name = "filesTable";
             this.filesTable.ReadOnly = true;
@@ -547,7 +549,7 @@
             this.filesTable.RowsDefaultCellStyle = dataGridViewCellStyle6;
             this.filesTable.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.filesTable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.filesTable.Size = new System.Drawing.Size(614, 326);
+            this.filesTable.Size = new System.Drawing.Size(614, 369);
             this.filesTable.TabIndex = 4;
             // 
             // Column1
@@ -592,11 +594,22 @@
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "Додати";
             // 
+            // basedOnNeed
+            // 
+            this.basedOnNeed.AutoSize = true;
+            this.basedOnNeed.Location = new System.Drawing.Point(18, 87);
+            this.basedOnNeed.Name = "basedOnNeed";
+            this.basedOnNeed.Size = new System.Drawing.Size(317, 17);
+            this.basedOnNeed.TabIndex = 30;
+            this.basedOnNeed.Text = "Закупівля базується на потребі, а не на реальних коштах";
+            this.basedOnNeed.UseVisualStyleBackColor = true;
+            this.basedOnNeed.CheckedChanged += new System.EventHandler(this.basedOnNeed_CheckedChanged);
+            // 
             // AddEditTPRecordForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(622, 417);
+            this.ClientSize = new System.Drawing.Size(622, 459);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.button1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -675,5 +688,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.CheckBox basedOnNeed;
     }
 }

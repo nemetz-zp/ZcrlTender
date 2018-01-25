@@ -72,7 +72,7 @@ namespace ZcrlTender
                 comboBox1.DisplayMember = "Name";
                 comboBox1.ValueMember = "Id";
 
-                List<KekvCode> kekvList = tc.KekvCodes.ToList();
+                List<KekvCode> kekvList = tc.KekvCodes.OrderBy(p => p.Code).ToList();
                 kekvList.Insert(0, new KekvCode { Id = -1, Code = allString });
                 comboBox2.DataSource = kekvList;
                 comboBox2.DisplayMember = "Code";

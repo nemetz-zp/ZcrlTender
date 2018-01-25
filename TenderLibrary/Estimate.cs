@@ -26,11 +26,30 @@ namespace TenderLibrary
 
         public virtual ICollection<BalanceChanges> Changes { get; set; }
         public virtual ICollection<UploadedFile> RelatedFiles { get; set; }
+        public virtual ICollection<TenderPlanRecord> PlanRecords { get; set; }
+
+        // Средства доступные по КЕКВ для создания записи в годовом плане
+        public decimal MoneyForYearPlanning(KekvCode kekv)
+        {
+            decimal result = Changes.Where(p => (p.PrimaryKekvId == kekv.Id) && ((p.PrimaryKekvSum > 0) || (p.PlannedSpendingId != null)))
+                .Select(p => p.PrimaryKekvSum).DefaultIfEmpty(0).Sum();
+
+            return result;
+        }
+
+        // Запланированные средства по КЕКВ
+        public decimal PlannedMoney(KekvCode kekv)
+        {
+            decimal result = PlanRecords.Where(p => p.PrimaryKekvId == kekv.Id).Select(p => p.UsedByRecordSum).Sum();
+            
+            return result;
+        }
 
         public Estimate()
         {
             Changes = new List<BalanceChanges>();
             RelatedFiles = new List<UploadedFile>();
+            PlanRecords = new List<TenderPlanRecord>();
         }
 
         public override bool Equals(object obj)

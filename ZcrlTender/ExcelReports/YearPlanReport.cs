@@ -141,7 +141,7 @@ namespace ZcrlTender.ExcelReports
                 }
 
                 var groupedByKekvResult = resultList.GroupBy(p => p.Kekv);
-                foreach(var kekv in groupedByKekvResult)
+                foreach (var kekv in groupedByKekvResult.OrderBy(p => p.Key.Code))
                 {
                     xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
                         dkCodeRemainColumnLetter + currentRowNumber.ToString()).Merge();
@@ -161,48 +161,47 @@ namespace ZcrlTender.ExcelReports
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(),
                             dkCodeRemainColumnLetter + currentRowNumber.ToString()).Font.Bold = true;
                         xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString()).Value = (dkCodeNum + 1).ToString();
-                        
-                        string dkCodeName = string.Format("{0} ({1})\n Затверджено протоколом № {2} від {3} року", 
-                            code.Dk.FullName, 
-                            code.RelatedTenderPlanRecord.ConcreteName, 
-                            code.RelatedTenderPlanRecord.ProtocolNum, 
-                            code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+
+                        string dkCodeName = string.Format("{0} ({1})",
+                                code.Dk.FullName,
+                                code.RelatedTenderPlanRecord.ConcreteName);
+                        if (!string.IsNullOrWhiteSpace(code.RelatedTenderPlanRecord.ProtocolNum))
+                        {
+                            dkCodeName = string.Format("{0}\n Затверджено протоколом № {1} від {2} року",
+                                dkCodeName,
+                                code.RelatedTenderPlanRecord.ProtocolNum,
+                                code.RelatedTenderPlanRecord.ProtocolDate.ToShortDateString());
+                        }
                         if(code.RelatedTenderPlanRecord.CodeRepeatReason != null)
                         {
                             dkCodeName = string.Format("{0}\nОбгрунтування повторення коду: {1}", dkCodeName, code.RelatedTenderPlanRecord.CodeRepeatReason);
                         }
                         xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString()).Value = dkCodeName;
                         int estimateRowBeginIndex = dkCodeName.IndexOf('\n') + 1;
-                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Size = 9;
-                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Italic = true;
-                        xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
-                            .get_Characters(estimateRowBeginIndex).Font.Bold = false;
+                        if (estimateRowBeginIndex > 0)
+                        {
+                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Size = 9;
+                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Italic = true;
+                            xlWorksheet.get_Range(dkCodeColumnLetter + currentRowNumber.ToString())
+                                .get_Characters(estimateRowBeginIndex).Font.Bold = false;
+                        }
 
                         xlWorksheet.get_Range(plannedMoneyColumnLetter + currentRowNumber.ToString()).Value = code.MoneyOnCode;
                         xlWorksheet.get_Range(procedureNameColumnLetter + currentRowNumber.ToString()).Value = TenderPlanRecord.GetProcedureName(code.RelatedTenderPlanRecord.ProcedureType);
                         xlWorksheet.get_Range(plannedPeriodColumnLetter + currentRowNumber.ToString()).Value =
                            string.Format("{0} {1} року", monthes[code.RelatedTenderPlanRecord.TenderBeginDate.Month - 1], code.RelatedTenderPlanRecord.TenderBeginDate.Year);
 
-                        List<Contract> contractsOnCode = null;
-
-                        if (isNewSystem)
-                        {
-                            contractsOnCode = tc.Contracts
-                                .Where(p => (p.RecordInPlan.DkCodeId == code.Dk.Id) && (p.RecordInPlan.PrimaryKekvId == code.Kekv.Id)).ToList();
-                        }
-                        else
-                        {
-                            contractsOnCode = tc.Contracts
-                                .Where(p => (p.RecordInPlan.DkCodeId == code.Dk.Id) && (p.RecordInPlan.SecondaryKekvId == code.Kekv.Id)).ToList();
-                        }
+                        List<Contract> contractsOnCode = code.RelatedTenderPlanRecord.RegisteredContracts.ToList();
 
                         int firstCodeContract = currentRowNumber + 1;
                         foreach(var contract in contractsOnCode)
                         {
                             currentRowNumber++;
 
+                            xlWorksheet.get_Range(numColumnLetter + currentRowNumber.ToString(), 
+                                dkCodeRemainColumnLetter + currentRowNumber.ToString()).Font.Size = 10;
                             string contractDescription = string.Empty;
                             if(!string.IsNullOrWhiteSpace(contract.Description))
                             {

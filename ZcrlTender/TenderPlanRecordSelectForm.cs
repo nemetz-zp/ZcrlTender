@@ -44,7 +44,7 @@ namespace ZcrlTender
                 tpEstimateCBList.DisplayMember = "Name";
                 tpEstimateCBList.ValueMember = "Id";
 
-                List<KekvCode> kekvs = tc.KekvCodes.ToList();
+                List<KekvCode> kekvs = tc.KekvCodes.OrderBy(p => p.Code).ToList();
                 kekvs.Insert(0, new KekvCode { Code = "- ВСІ -", Id = -1 });
                 tpKekvsCBList.DataSource = kekvs;
                 tpKekvsCBList.DisplayMember = "Code";
@@ -99,7 +99,7 @@ namespace ZcrlTender
                                   Kekv = (selectedEstimate.IsNewSystem) ? rec.PrimaryKekv : rec.SecondaryKekv,
                                   Dk = rec.Dk,
                                   PlannedMoney = rec.PlannedSum,
-                                  MoneyRemain = rec.PlannedSum - rec.RegisteredContracts.Sum(p => p.Sum),
+                                  MoneyRemain = rec.AvailableForContractsMoney,
                                   Commentary = rec.CodeRepeatReason,
                                   Record = rec
                               } into s1 
@@ -133,6 +133,9 @@ namespace ZcrlTender
                 tc.TenderPlanRecords.Attach(SelectedRecord);
                 tc.Entry<TenderPlanRecord>(SelectedRecord).Collection(p => p.RegisteredContracts).Load();
                 tc.Entry<TenderPlanRecord>(SelectedRecord).Collection(p => p.RegisteredContracts).Query().Include(p => p.Invoices).Load();
+
+                tc.Entry<TenderPlanRecord>(SelectedRecord).Reference(p => p.Estimate).Load();
+                tc.Entry<TenderPlanRecord>(SelectedRecord).Reference(p => p.Estimate).Query().Include(p => p.Changes).Load();
             }
             Close();
         }

@@ -73,6 +73,13 @@ namespace TenderLibrary
                 .HasForeignKey(p => p.TenderPlanRecordId)
                 .WillCascadeOnDelete(false);
 
+            // Настройка внешнего ключа для TenderPlanRecord
+            modelBuilder.Entity<TenderPlanRecord>()
+                .HasRequired(p => p.Estimate)
+                .WithMany(p => p.PlanRecords)
+                .HasForeignKey(p => p.EstimateId)
+                .WillCascadeOnDelete(false);
+
             base.OnModelCreating(modelBuilder);
         }
     }

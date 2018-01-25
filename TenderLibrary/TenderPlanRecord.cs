@@ -53,19 +53,51 @@ namespace TenderLibrary
         // Запланированная сумма
         public decimal PlannedSum { get; set; }
 
+        // Запись основана на потребности, а не на запланированном финансировании
+        public bool BasedOnNeed { get; set; }
+
+        // Доступные средства под регистрацию договоров
+        [NotMapped]
+        public decimal AvailableForContractsMoney
+        {
+            get
+            {
+                decimal result = 0;
+                if(BasedOnNeed || IsTenderComplete)
+                {
+                    decimal estimateMoneyOnKekv = Estimate.Changes
+                        .Where(p => ((p.PrimaryKekvId == PrimaryKekvId) && ((p.PrimaryKekvSum > 0) || (p.PlannedSpendingId != null))))
+                        .Select(p => p.PrimaryKekvSum).DefaultIfEmpty(0)
+                        .Sum();
+                    decimal usedByAnotherRecordsMoney = Estimate.PlanRecords.Where(p => p.PrimaryKekvId == PrimaryKekvId)
+                        .Select(p => p.UsedByRecordSum)
+                        .DefaultIfEmpty(0)
+                        .Sum();
+                    decimal freeMoney = estimateMoneyOnKekv - usedByAnotherRecordsMoney;
+                    result = (PlannedSum > freeMoney) ? freeMoney : PlannedSum;
+                }
+                else
+                {
+                    result = PlannedSum - RegisteredContracts.Select(p => p.Sum).DefaultIfEmpty(0).Sum();
+                }
+
+                return result;
+            }
+        }
+
         // Фактически занятая часть финансирования
         [NotMapped]
         public decimal UsedByRecordSum
         {
             get
             {
-                if(!IsTenderComplete)
+                if(!IsTenderComplete && !BasedOnNeed)
                 {
                     return PlannedSum;
                 }
                 else
                 {
-                    return RegisteredContracts.Select(p => p.Sum).DefaultIfEmpty().Sum();
+                    return RegisteredContracts.Select(p => p.Sum).DefaultIfEmpty(0).Sum();
                 }
             }
         }

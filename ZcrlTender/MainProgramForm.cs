@@ -108,8 +108,8 @@ namespace ZcrlTender
             using(TenderContext tc = new TenderContext())
             {
                 kekvsForCBList = new BindingList<KekvCode>();
-                kekvs = tc.KekvCodes.ToList();
-                moneySources = tc.MoneySources.ToList();
+                kekvs = tc.KekvCodes.OrderBy(p => p.Code).ToList();
+                moneySources = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
 
                 DataGridViewHelper.DrawMoneyTotalsTableSchema<KekvCode, MoneySource>(moneyRemainsTable,
                     kekvs, 
@@ -371,7 +371,7 @@ namespace ZcrlTender
             controlsDataWasChangedByUser = false;
             using (TenderContext tc = new TenderContext())
             {
-                contractorsForCBList = new BindingList<Contractor>(tc.Contractors.ToList());
+                contractorsForCBList = new BindingList<Contractor>(tc.Contractors.OrderBy(p => p.ShortName).ToList());
                 contractorsForCBList.Insert(0, new Contractor { Id = -1, ShortName = "- ВСІ -" });
                 contContractorCBList.DataSource = invContractorCBList.DataSource = contractorsForCBList;
             }
@@ -473,6 +473,17 @@ namespace ZcrlTender
                                  } into s1
                                  orderby s1.YearSum descending
                                  select s1).ToList();
+                
+                if(estSums.Count > 1)
+                {
+                    EstimatesTableEntry totalRow = new EstimatesTableEntry 
+                    { 
+                        Estimate = new Estimate { Id = -1, Name = "ВСЬОГО" }, 
+                        YearSum = estSums.Sum(p => p.YearSum) 
+                    };
+                    estSums.Add(totalRow);
+                }
+
                 estimatesList = new BindingList<EstimatesTableEntry>(estSums);
                 estimateTable.DataSource = estimatesList;
                 estimateTable.Refresh();
@@ -485,7 +496,20 @@ namespace ZcrlTender
 
         private void estimateTable_SelectionChanged(object sender, EventArgs e)
         {
-            editEstimateButton.Enabled = deleteEstimateButton.Enabled = printEstimateButton.Enabled = (estimateTable.SelectedRows.Count > 0);
+            if (estimateTable.SelectedRows.Count > 0)
+            {
+                EstimatesTableEntry selectedRecord = estimateTable.SelectedRows[0].DataBoundItem as EstimatesTableEntry;
+
+                editEstimateButton.Enabled =
+                    deleteEstimateButton.Enabled =
+                    printEstimateButton.Enabled = selectedRecord.Estimate.Id > 0;
+            }
+            else
+            {
+                editEstimateButton.Enabled =
+                    deleteEstimateButton.Enabled =
+                    printEstimateButton.Enabled = false;
+            }
         }
 
         private void TogglePlannedSpendingUpdateAnimation()
@@ -684,8 +708,14 @@ namespace ZcrlTender
 
         private void EditEstimate()
         {
-            Estimate selectedEstimate = (estimateTable.SelectedRows[0].DataBoundItem as EstimatesTableEntry).Estimate;
-            EstimateForm ef = new EstimateForm(selectedEstimate);
+            EstimatesTableEntry selectedEstimate = estimateTable.SelectedRows[0].DataBoundItem as EstimatesTableEntry;
+
+            if(selectedEstimate.Estimate.Id < 0)
+            {
+                return;
+            }
+
+            EstimateForm ef = new EstimateForm(selectedEstimate.Estimate);
             ef.ShowDialog();
 
             if (ef.WasDbChanged)
@@ -1748,6 +1778,17 @@ namespace ZcrlTender
                     tenderPlanTable.Rows[i].DefaultCellStyle.BackColor = System.Drawing.SystemColors.Window;
                 }
             }
+        }
+
+        private void estimateTable_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            if (estimatesList.Count > 2)
+            {
+                HighlightPlanTotalsRow(estimateTable.Rows[estimateTable.RowCount - 1]);
+                estimateTable.Rows[estimateTable.RowCount - 1].Cells[0].Value = null;
+            }
+
+            estimateTable.Refresh();
         }
     }
 }

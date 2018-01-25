@@ -70,6 +70,7 @@ namespace ZcrlTender.ExcelReports
                                Source = g1.Key, Sum = g1.Sum(p => p.PrimaryKekvSum) 
                            } into s1
                            where s1.Sum > 0
+                           orderby s1.Source.ViewPriority
                            select s1.Source).ToList();
                 sourcesNum = sources.Count;
             }

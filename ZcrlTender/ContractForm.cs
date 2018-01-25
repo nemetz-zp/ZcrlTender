@@ -94,7 +94,7 @@ namespace ZcrlTender
             }
 
             decimal currentContractSum = (currentContract != null) ? currentContract.Sum: 0;
-            decimal currentContractMaximumSum = record.PlannedSum - record.RegisteredContracts.Sum(p => p.Sum) + currentContractSum;
+            decimal currentContractMaximumSum = record.AvailableForContractsMoney + currentContractSum;
             label8.Text = string.Format("Максимум за річним планом {0:N2} грн.", currentContractMaximumSum);
             fullSum.Maximum = currentContractMaximumSum;
         }

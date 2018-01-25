@@ -74,7 +74,9 @@ namespace ZcrlTender.ExcelReports
                              from g3Item in
                                  (from item in g2
                                   group item by item.Kekv)
-                             group g3Item by g2.Key).ToList();
+                             group g3Item by g2.Key into g3
+                             orderby g3.Key.ViewPriority
+                             select g3).ToList();
                 foreach (var source in mList)
                 {
                     headersList.Add(currentRowNumber);

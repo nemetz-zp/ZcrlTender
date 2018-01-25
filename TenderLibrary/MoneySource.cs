@@ -13,6 +13,9 @@ namespace TenderLibrary
         public string Name { get; set; }
         public string Description { get; set; }
 
+        // Приоритет отображения источника
+        public int ViewPriority { get; set; }
+
         public override bool Equals(object obj)
         {
             if (obj == null)
