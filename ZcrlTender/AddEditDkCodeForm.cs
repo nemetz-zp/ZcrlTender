@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 using TenderLibrary;
 
 namespace ZcrlTender
@@ -52,6 +53,11 @@ namespace ZcrlTender
             if(string.IsNullOrWhiteSpace(codeTextBox.Text))
             {
                 NotificationHelper.ShowError("Ви не зазначили код");
+                return;
+            }
+            if(!Regex.IsMatch(codeTextBox.Text.Trim(), "[0-9]{8}-[0-9]"))
+            {
+                NotificationHelper.ShowError("Неправильний формат коду. Код повинен відповідати формату ХХХХХХХХ-Х. Де Х - число від 0 до 9");
                 return;
             }
             if (string.IsNullOrWhiteSpace(nameTextBox.Text))

@@ -18,8 +18,25 @@ namespace TenderLibrary
         {
             get
             {
-                return Code + " " + Name;
+                return this.Code + " " + this.Name;
             }
+        }
+
+        // Сравнение кодов ДК по конкретному количеству цифр слева
+        public bool CompareDkByDigit(DkCode anotherCode, int digitsNum)
+        {
+            bool result = false;
+
+            if(digitsNum < 9)
+            {
+                result = this.Code.Substring(0, digitsNum).Equals(anotherCode.Code.Substring(0, digitsNum));
+            }
+            else
+            {
+                result = (this.Id == anotherCode.Id);
+            }
+
+            return result;
         }
 
         public override string ToString()

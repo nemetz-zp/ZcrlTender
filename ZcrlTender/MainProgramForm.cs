@@ -200,7 +200,6 @@ namespace ZcrlTender
                 tpKekvsCBList.SelectedIndexChanged      += tpFilterHandler;
                 tpNewSystemRButton.CheckedChanged       += tpFilterHandler;
                 tpAltSystemRButton.CheckedChanged       += tpFilterHandler;
-                tpShowNullCodesChBox.CheckedChanged     += tpFilterHandler;
 
                 // Фильтр записей о договорах
                 EventHandler contractsFilterHander = (sender, e) => LoadContractsTableRecords();
@@ -438,7 +437,6 @@ namespace ZcrlTender
             {
                 ToggleTenderPlanRecordsUpdateAnimation();
                 TenderPlanRecordsFilter filter = new TenderPlanRecordsFilter();
-                filter.NullRecordsShow = tpShowNullCodesChBox.Checked;
                 filter.Estimate = tpEstimateCBList.SelectedItem as Estimate;
                 filter.PrimaryKekvSelected = tpNewSystemRButton.Checked;
                 filter.Kekv = tpKekvsCBList.SelectedItem as KekvCode;
@@ -762,7 +760,6 @@ namespace ZcrlTender
             public Estimate Estimate { get; set; }
             public KekvCode Kekv { get; set; }
             public bool PrimaryKekvSelected { get; set; }
-            public bool NullRecordsShow { get; set; }
         }
 
         // Фильтр результатов таблицы записей договоров 
@@ -880,11 +877,6 @@ namespace ZcrlTender
                             ContractsMoneyRemain = resultList.Sum(p => p.ContractsMoneyRemain)
                         };
                         resultList.Add(totalRow);
-                    }
-
-                    if (!filter.NullRecordsShow)
-                    {
-                        resultList = resultList.Where(p => p.MoneyOnCode > 0).ToList();
                     }
 
                     e.Result = resultList;
@@ -1719,6 +1711,7 @@ namespace ZcrlTender
             int currentColorIndex = 0;
             int recordsCount = tenderPlanItemsList.Count;
             int colorsCount = samePlanCodesColors.Length;
+            int digitsNum = Convert.ToInt32(numericUpDown1.Value);
 
             if(recordsCount < 3)
             {
@@ -1726,13 +1719,13 @@ namespace ZcrlTender
             }
             else
             {
-                for(int i = 0; i < recordsCount - 1; i++)
+                for(int i = 0; i < recordsCount - 2; i++)
                 {
-                    if(tenderPlanItemsList[i].Dk.Equals(tenderPlanItemsList[i+1].Dk))
+                    if(tenderPlanItemsList[i].Dk.CompareDkByDigit(tenderPlanItemsList[i+1].Dk, digitsNum))
                     {
-                        while(i < (recordsCount - 1))
+                        while(i < (recordsCount - 2))
                         {
-                            if(tenderPlanItemsList[i].Dk.Equals(tenderPlanItemsList[i+1].Dk))
+                            if(tenderPlanItemsList[i].Dk.CompareDkByDigit(tenderPlanItemsList[i+1].Dk, digitsNum))
                             {
                                 tenderPlanTable.Rows[i].DefaultCellStyle.BackColor =
                                     tenderPlanTable.Rows[i+1].DefaultCellStyle.BackColor = samePlanCodesColors[currentColorIndex];
@@ -1770,13 +1763,20 @@ namespace ZcrlTender
             if(highlightSameCodesRowsCheckBox.Checked)
             {
                 HighlightSameCodesRows();
+                numericUpDown1.ReadOnly = false;
             }
             else
             {
-                for(int i = 0; i < tenderPlanTable.RowCount - 1; i++)
-                {
-                    tenderPlanTable.Rows[i].DefaultCellStyle.BackColor = System.Drawing.SystemColors.Window;
-                }
+                ClearSameCodesFormat();
+            }
+        }
+
+        private void ClearSameCodesFormat()
+        {
+            for (int i = 0; i < tenderPlanTable.RowCount - 1; i++)
+            {
+                tenderPlanTable.Rows[i].DefaultCellStyle.BackColor = System.Drawing.SystemColors.Window;
+                numericUpDown1.ReadOnly = true;
             }
         }
 
@@ -1789,6 +1789,15 @@ namespace ZcrlTender
             }
 
             estimateTable.Refresh();
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            if(highlightSameCodesRowsCheckBox.Checked)
+            {
+                ClearSameCodesFormat();
+                HighlightSameCodesRows();
+            }
         }
     }
 }
