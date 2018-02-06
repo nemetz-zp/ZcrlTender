@@ -154,7 +154,7 @@ namespace ZcrlTender
                                        select new KekvMoneyRecord
                                        {
                                            Kekv = g1.Key,
-                                           Sum = g1.Sum(p => p.PlannedSum)
+                                           Sum = g1.Sum(p => p.UsedByRecordSum)
                                        }).ToList();
             }
         }
@@ -326,7 +326,7 @@ namespace ZcrlTender
             int selectedTabIndex = tabControl1.SelectedIndex;
             sourcesList.Add(estimateMoneyList[selectedTabIndex - 1].Source);
             estimateMoneyList.RemoveAt(selectedTabIndex - 1);
-            tabControl1.TabPages.RemoveAt(selectedTabIndex);
+            tabControl1.TabPages.Remove(tabControl1.SelectedTab);
             CheckPossibilityToAddMoneySources();
             RecalculateTotals();
         }
