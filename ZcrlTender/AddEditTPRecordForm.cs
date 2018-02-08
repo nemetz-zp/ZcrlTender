@@ -387,43 +387,6 @@ namespace ZcrlTender
                 planRecord = new TenderPlanRecord();
             }
 
-            Estimate selectedEstimate = estimatesCBList.SelectedItem as Estimate;
-            KekvCode selectedPrimaryKekv = (mainKekv.SelectedItem as KekvRemain).Kekv;
-            KekvCode selectedAltKekv = (altKekv.SelectedItem as KekvRemain).Kekv;
-
-            planRecord.EstimateId = selectedEstimate.Id;
-            planRecord.DkCodeId = Convert.ToInt32(dkCodesCBList.SelectedValue);
-            planRecord.PrimaryKekvId = selectedPrimaryKekv.Id;
-            planRecord.SecondaryKekvId = selectedAltKekv.Id;
-            planRecord.DateOfCreating = planRecord.DateOfLastChange = DateTime.Now;
-            planRecord.ProcedureType = (ProcedureType)procedureTypeCBList.SelectedValue;
-
-            planRecord.CodeRepeatReason = isCodeRepeatCheckBox.Checked ? codeRepeatReasonTextBox.Text.Trim() : null;
-
-            decimal changeOfSum = dkCodeSum.Value;
-            planRecord.IsTenderComplete = isProcedureComplete.Checked;
-            planRecord.TenderBeginDate = tenderBeginDate.Value;
-            planRecord.PlannedSum = dkCodeSum.Value;
-            planRecord.ConcreteName = conctretePlanItemName.Text;
-            planRecord.DateOfLastChange = DateTime.Now;
-            planRecord.ProtocolNum = protocolNum.Text.Trim();
-            planRecord.ProtocolDate = protocolDate.Value;
-            planRecord.BasedOnNeed = basedOnNeed.Checked;
-            
-            TenderPlanRecordChange tpChange = new TenderPlanRecordChange();
-            if (!string.IsNullOrWhiteSpace(actionDescription))
-            {
-                tpChange.Description = actionDescriptionPrefix + '\n' + actionDescription;
-            }
-            else
-            {
-                tpChange.Description = actionDescriptionPrefix;
-            }
-            tpChange.DateOfChange = DateTime.Now;
-            tpChange.TenderPlanRecordId = planRecord.Id;
-            tpChange.ChangeOfSum = changeOfSum;
-            tpChange.ChangedConcreteName = planRecord.ConcreteName;
-
             using(TenderContext tc = new TenderContext())
             {
                 if(planRecord.Id != 0)
@@ -435,6 +398,44 @@ namespace ZcrlTender
                 {
                     tc.TenderPlanRecords.Add(planRecord);
                 }
+
+                Estimate selectedEstimate = estimatesCBList.SelectedItem as Estimate;
+                KekvCode selectedPrimaryKekv = (mainKekv.SelectedItem as KekvRemain).Kekv;
+                KekvCode selectedAltKekv = (altKekv.SelectedItem as KekvRemain).Kekv;
+
+                planRecord.EstimateId = selectedEstimate.Id;
+                planRecord.DkCodeId = Convert.ToInt32(dkCodesCBList.SelectedValue);
+                planRecord.PrimaryKekvId = selectedPrimaryKekv.Id;
+                planRecord.SecondaryKekvId = selectedAltKekv.Id;
+                planRecord.DateOfCreating = planRecord.DateOfLastChange = DateTime.Now;
+                planRecord.ProcedureType = (ProcedureType)procedureTypeCBList.SelectedValue;
+
+                planRecord.CodeRepeatReason = isCodeRepeatCheckBox.Checked ? codeRepeatReasonTextBox.Text.Trim() : null;
+
+                decimal changeOfSum = dkCodeSum.Value;
+                planRecord.IsTenderComplete = isProcedureComplete.Checked;
+                planRecord.TenderBeginDate = tenderBeginDate.Value;
+                planRecord.PlannedSum = dkCodeSum.Value;
+                planRecord.ConcreteName = conctretePlanItemName.Text;
+                planRecord.DateOfLastChange = DateTime.Now;
+                planRecord.ProtocolNum = protocolNum.Text.Trim();
+                planRecord.ProtocolDate = protocolDate.Value;
+                planRecord.BasedOnNeed = basedOnNeed.Checked;
+
+                TenderPlanRecordChange tpChange = new TenderPlanRecordChange();
+                if (!string.IsNullOrWhiteSpace(actionDescription))
+                {
+                    tpChange.Description = actionDescriptionPrefix + '\n' + actionDescription;
+                }
+                else
+                {
+                    tpChange.Description = actionDescriptionPrefix;
+                }
+                tpChange.DateOfChange = DateTime.Now;
+                tpChange.TenderPlanRecordId = planRecord.Id;
+                tpChange.ChangeOfSum = changeOfSum;
+                tpChange.ChangedConcreteName = planRecord.ConcreteName;
+
                 tc.SaveChanges();
 
                 FileManager.UpdateRelatedFilesOfEntity(tc, planRecord.RelatedFiles, relatedFiles, deletingFiles);
