@@ -15,14 +15,14 @@ namespace ZcrlTender
     public partial class EstimateFreeMoneyForm : Form
     {
 
-        public EstimateFreeMoneyForm(Estimate est)
+        public EstimateFreeMoneyForm(int estimateId)
         {
             InitializeComponent();
             kekvRemainsTable.AutoGenerateColumns = false;
 
             using (TenderContext tc = new TenderContext())
             {
-                tc.Estimates.Attach(est);
+                Estimate est = tc.Estimates.Where(p => p.Id == estimateId).FirstOrDefault();
 
                 estimateNameLabel.Text = est.Name;
                 this.Text += " на " + est.Year.Year + " рік";

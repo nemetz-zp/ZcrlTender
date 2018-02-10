@@ -1311,7 +1311,7 @@ namespace ZcrlTender
         {
             Estimate selectedEstimate = tpEstimateCBList.SelectedItem as Estimate;
 
-            EstimateFreeMoneyForm ef = new EstimateFreeMoneyForm(selectedEstimate);
+            EstimateFreeMoneyForm ef = new EstimateFreeMoneyForm(selectedEstimate.Id);
             ef.ShowDialog();
         }
 
