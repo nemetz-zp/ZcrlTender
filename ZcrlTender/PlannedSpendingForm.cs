@@ -181,6 +181,7 @@ namespace ZcrlTender
                 sourcesList = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
                 estimateCBList.DataSource = tc.Estimates
                     .Where(t => (t.TenderYearId == year.Id) && (t.Changes.Sum(p => p.PrimaryKekvSum) > 0))
+                    .OrderBy(t => t.Id)
                     .ToList();
 
                 Estimate selectedEstimate = estimateCBList.SelectedItem as Estimate;
@@ -373,7 +374,9 @@ namespace ZcrlTender
                                                                      {
                                                                          Kekv = rec1.Kekv,
                                                                          Remain = rec1.Remain - jr.Remain
-                                                                     }).ToList();
+                                                                     } into s1
+                                                                     orderby s1.Kekv.Code ascending
+                                                                     select s1).ToList();
 
                 kekvRemains.Clear();
                 foreach (var item in availableMoneyForPlannedSpending)

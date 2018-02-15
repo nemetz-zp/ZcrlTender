@@ -19,10 +19,10 @@ namespace ZcrlTender
     {
         private static TenderYear currentTenderYear;
         private List<KekvCode> kekvs;
-        private BindingList<KekvCode> kekvsForCBList;
-        private BindingList<Estimate> estimatesForCBList;
-        private BindingList<Contractor> contractorsForCBList;
-        private BindingList<Contract> contractsForCBList;
+        private List<KekvCode> kekvsForCBList;
+        private List<Estimate> estimatesForCBList;
+        private List<Contractor> contractorsForCBList;
+        private List<Contract> contractsForCBList;
         private List<MoneySource> moneySources;
 
         private BindingList<EstimatesTableEntry> estimatesList;
@@ -107,10 +107,10 @@ namespace ZcrlTender
 
             using(TenderContext tc = new TenderContext())
             {
-                kekvsForCBList = new BindingList<KekvCode>();
                 kekvs = tc.KekvCodes.OrderBy(p => p.Code).ToList();
                 moneySources = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
 
+                // Рисуем таблицу текущих остатков
                 DataGridViewHelper.DrawMoneyTotalsTableSchema<KekvCode, MoneySource>(moneyRemainsTable,
                     kekvs, 
                     moneySources, 
@@ -118,13 +118,13 @@ namespace ZcrlTender
                     t => t.Name);
 
                 // Формирование списка КЕКВ
-                kekvsForCBList = new BindingList<KekvCode>(kekvs.ToList());
+                kekvsForCBList = kekvs.ToList();
                 kekvsForCBList.Insert(0, new KekvCode { Id = -1, Code = "- ВСІ -" });
-                tpKekvsCBList.DataSource = 
-                    contKekvsCBList.DataSource = 
-                    invKekvsCBList.DataSource = 
-                    spenKekvsCBList.DataSource = 
-                    kekvsForCBList;
+                tpKekvsCBList.DataSource    = kekvsForCBList;
+                contKekvsCBList.DataSource  = kekvsForCBList.ToList();
+                invKekvsCBList.DataSource   = kekvsForCBList.ToList();
+                spenKekvsCBList.DataSource  = kekvsForCBList.ToList();
+
                 tpKekvsCBList.DisplayMember =
                     contKekvsCBList.DisplayMember =
                     invKekvsCBList.DisplayMember =
@@ -319,15 +319,14 @@ namespace ZcrlTender
             controlsDataWasChangedByUser = false;
             using(TenderContext tc = new TenderContext())
             {
-                estimatesForCBList = new BindingList<Estimate>(tc.Estimates.Where(p => p.TenderYearId == currentTenderYear.Id).ToList());
-                BindingList<Estimate> estimatesForCBList2 = new BindingList<Estimate>(estimatesForCBList);
-                estimatesForCBList2.Insert(0, new Estimate { Id = -1, Name = "- ВСІ -" });
-                tpEstimateCBList.DataSource = estimatesForCBList;
+                estimatesForCBList = tc.Estimates.Where(p => p.TenderYearId == currentTenderYear.Id).ToList();
+                estimatesForCBList.Insert(0, new Estimate { Id = -1, Name = "- ВСІ -" });
 
-                mainEstimateCBList.DataSource =
-                contEstimateCBList.DataSource =
-                invEstimateCBList.DataSource =
-                spenEstimateCBList.DataSource = estimatesForCBList2;
+                tpEstimateCBList.DataSource = estimatesForCBList;
+                mainEstimateCBList.DataSource = estimatesForCBList.ToList();
+                contEstimateCBList.DataSource = estimatesForCBList.ToList();
+                invEstimateCBList.DataSource = estimatesForCBList.ToList();
+                spenEstimateCBList.DataSource = estimatesForCBList.ToList();
             }
             controlsDataWasChangedByUser = true;
         }
@@ -346,13 +345,13 @@ namespace ZcrlTender
                 int selectedContractorInInvGroup = Convert.ToInt32(invContractorCBList.SelectedValue);
                 if (selectedContractorInInvGroup > 0)
                 {
-                    contractsForCBList = new BindingList<Contract>(tc.Contracts
+                    contractsForCBList = tc.Contracts
                         .Where(p => (p.ContractorId == selectedContractorInInvGroup) && (p.RecordInPlan.Estimate.TenderYearId == MainProgramForm.CurrentTenderYear.Id))
-                        .ToList());
+                        .ToList();
                 }
                 else
                 {
-                    contractsForCBList = new BindingList<Contract>(new List<Contract>());
+                    contractsForCBList = new List<Contract>();
                 }
                 contractsForCBList.Insert(0, new Contract { Id = -1, Description = "- ВСІ -" });
                 label5.Enabled = label6.Enabled = invContractorCBList.Enabled = invContractCBList.Enabled = true;
@@ -370,9 +369,10 @@ namespace ZcrlTender
             controlsDataWasChangedByUser = false;
             using (TenderContext tc = new TenderContext())
             {
-                contractorsForCBList = new BindingList<Contractor>(tc.Contractors.OrderBy(p => p.ShortName).ToList());
+                contractorsForCBList = tc.Contractors.OrderBy(p => p.ShortName).ToList();
                 contractorsForCBList.Insert(0, new Contractor { Id = -1, ShortName = "- ВСІ -" });
-                contContractorCBList.DataSource = invContractorCBList.DataSource = contractorsForCBList;
+                contContractorCBList.DataSource = contractorsForCBList;
+                invContractorCBList.DataSource = contractorsForCBList.ToList();
             }
             controlsDataWasChangedByUser = true;
 
@@ -1018,7 +1018,7 @@ namespace ZcrlTender
 
                     if (filter.Contractor.Id > 0)
                     {
-                        allInvoices = allInvoices.Where(p => p.ContractId == filter.Contractor.Id).ToList();
+                        allInvoices = allInvoices.Where(p => p.Contract.ContractorId == filter.Contractor.Id).ToList();
                     }
                     if (filter.Kekv.Id > 0)
                     {

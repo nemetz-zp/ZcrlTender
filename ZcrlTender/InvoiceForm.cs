@@ -159,7 +159,7 @@ namespace ZcrlTender
                 sourcesList = tc.MoneySources.OrderBy(p => p.ViewPriority).ToList();
                 contractorsCBList.DataSource = tc.Contracts.ToList()
                     .Where(p => (p.RecordInPlan.Estimate.TenderYearId == year.Id) && (p.Status == ContractStatus.Active))
-                    .Select(p => p.Contractor).Distinct()
+                    .Select(p => p.Contractor).Distinct().OrderBy(p => p.ShortName)
                     .ToList();
                 contractorsCBList.ValueMember = "Id";
                 contractorsCBList.DisplayMember = "ShortName";
@@ -634,6 +634,7 @@ namespace ZcrlTender
                     }
 
                     invoiceDate.MinDate = selectedContract.BeginDate;
+                    invoiceFullSum.Maximum = contractsRemains[selectedContractIndex];
                 }
             }
         }
