@@ -299,12 +299,15 @@ namespace ZcrlTender
             using (TenderContext tc = new TenderContext())
             {
                 moneysOnSources.Clear();
+                DateTime lastDayOfMonth = new DateTime(arg.DocumentDate.Year,
+                    arg.DocumentDate.Month,
+                    DateTime.DaysInMonth(arg.DocumentDate.Year, arg.DocumentDate.Month));
                 foreach (var source in sourcesList)
                 {
                     decimal remain = tc.BalanceChanges
                         .Where(p => (p.EstimateId == arg.Estimate.Id)
                             && (p.PrimaryKekvId == arg.Kekv.Id)
-                        && (p.DateOfReceiving <= arg.DocumentDate)
+                        && (p.DateOfReceiving <= lastDayOfMonth)
                         && (p.MoneySourceId == source.Id)).Select(p => p.PrimaryKekvSum).DefaultIfEmpty(0).Sum();
 
                     if (spendingRecord.Id > 0)
@@ -481,7 +484,7 @@ namespace ZcrlTender
                 decimal enteredByUserSum = Convert.ToDecimal(balanceChangesTable.Rows[i].Cells[0].Value);
                 if (enteredByUserSum > moneysOnSources[i])
                 {
-                    enteredByUserSum = moneysOnSources[i];
+                    balanceChangesTable.Rows[i].Cells[0].Value = moneysOnSources[i];
                 }
             }
         }
