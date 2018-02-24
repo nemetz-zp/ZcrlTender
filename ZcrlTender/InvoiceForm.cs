@@ -424,6 +424,11 @@ namespace ZcrlTender
             {
                 return;
             }
+            if(invoiceFullSum.Value == 0)
+            {
+                balanceChangesTable.CancelEdit();
+                return;
+            }
 
             decimal cellValue = 0;
 
@@ -447,18 +452,19 @@ namespace ZcrlTender
             {
                 if(i == e.RowIndex)
                 {
-                    sum += cellValue;
+                    continue;
                 }
                 else
                 {
                     sum += Convert.ToDecimal(balanceChangesTable.Rows[i].Cells[0].Value);
                 }
-
-                if(sum > invoiceFullSum.Value)
-                {
-                    balanceChangesTable.CancelEdit();
-                    return;
-                }
+            }
+            if ((sum + cellValue) > invoiceFullSum.Value)
+            {
+                balanceChangesTable.CancelEdit();
+                controlValueWasChangedByUser = false;
+                balanceChangesTable.Rows[e.RowIndex].Cells[0].Value = (invoiceFullSum.Value - sum);
+                controlValueWasChangedByUser = true;
             }
         }
 

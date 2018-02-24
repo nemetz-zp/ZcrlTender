@@ -182,6 +182,8 @@
             this.yearPlanLoadingPicture = new System.Windows.Forms.PictureBox();
             this.contractsTPRecordButton = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label20 = new System.Windows.Forms.Label();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.highlightSameCodesRowsCheckBox = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -226,8 +228,10 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.moneyRemainsloadingPicture = new System.Windows.Forms.PictureBox();
             this.оПрограміToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label20 = new System.Windows.Forms.Label();
+            this.plSpendEndDatePicker = new System.Windows.Forms.DateTimePicker();
+            this.label26 = new System.Windows.Forms.Label();
+            this.plSpendStartDatePicker = new System.Windows.Forms.DateTimePicker();
+            this.label27 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsTable)).BeginInit();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plannedSpendingLoadingPicture)).BeginInit();
@@ -244,6 +248,7 @@
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.yearPlanLoadingPicture)).BeginInit();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tenderPlanTable)).BeginInit();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.estimateTable)).BeginInit();
@@ -251,7 +256,6 @@
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsloadingPicture)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // settingsToolStripMenuItem
@@ -462,6 +466,10 @@
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.plSpendEndDatePicker);
+            this.groupBox4.Controls.Add(this.label26);
+            this.groupBox4.Controls.Add(this.plSpendStartDatePicker);
+            this.groupBox4.Controls.Add(this.label27);
             this.groupBox4.Controls.Add(this.spenStatusCBList);
             this.groupBox4.Controls.Add(this.label22);
             this.groupBox4.Controls.Add(this.spenEstimateCBList);
@@ -1606,6 +1614,39 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Фільтр за критеріями";
             // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(736, 51);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(36, 13);
+            this.label20.TabIndex = 21;
+            this.label20.Text = "знаку";
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(679, 49);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(50, 20);
+            this.numericUpDown1.TabIndex = 20;
+            this.numericUpDown1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numericUpDown1.Value = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            // 
             // highlightSameCodesRowsCheckBox
             // 
             this.highlightSameCodesRowsCheckBox.AutoSize = true;
@@ -2125,38 +2166,39 @@
             this.оПрограміToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             this.оПрограміToolStripMenuItem.Text = "О програмі";
             // 
-            // numericUpDown1
+            // plSpendEndDatePicker
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(679, 49);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(50, 20);
-            this.numericUpDown1.TabIndex = 20;
-            this.numericUpDown1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.plSpendEndDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.plSpendEndDatePicker.Location = new System.Drawing.Point(700, 56);
+            this.plSpendEndDatePicker.Name = "plSpendEndDatePicker";
+            this.plSpendEndDatePicker.Size = new System.Drawing.Size(111, 20);
+            this.plSpendEndDatePicker.TabIndex = 22;
             // 
-            // label20
+            // label26
             // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(736, 51);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(36, 13);
-            this.label20.TabIndex = 21;
-            this.label20.Text = "знаку";
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(669, 58);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(22, 13);
+            this.label26.TabIndex = 21;
+            this.label26.Text = "по:";
+            // 
+            // plSpendStartDatePicker
+            // 
+            this.plSpendStartDatePicker.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.plSpendStartDatePicker.Location = new System.Drawing.Point(546, 56);
+            this.plSpendStartDatePicker.Name = "plSpendStartDatePicker";
+            this.plSpendStartDatePicker.Size = new System.Drawing.Size(111, 20);
+            this.plSpendStartDatePicker.TabIndex = 20;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(495, 58);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(45, 13);
+            this.label27.TabIndex = 19;
+            this.label27.Text = "Дата з:";
             // 
             // MainProgramForm
             // 
@@ -2196,6 +2238,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.yearPlanLoadingPicture)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tenderPlanTable)).EndInit();
             this.tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.estimateTable)).EndInit();
@@ -2205,7 +2248,6 @@
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moneyRemainsloadingPicture)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2372,6 +2414,10 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.DateTimePicker plSpendEndDatePicker;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.DateTimePicker plSpendStartDatePicker;
+        private System.Windows.Forms.Label label27;
     }
 }
 

@@ -87,10 +87,13 @@ namespace ZcrlTender
 
             // Настраиваем диапазоны доступных дат
             contStartDatePicker.Value = contEndDatePicker.Value = invStartDatePicker.Value = invEndDatePicker.Value 
+                = plSpendStartDatePicker.Value = plSpendEndDatePicker.Value
                 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0).AddYears(Convert.ToInt32(CurrentTenderYear.Year) - DateTime.Now.Year);
             contStartDatePicker.MaxDate = contEndDatePicker.MaxDate = invStartDatePicker.MaxDate = invEndDatePicker.MaxDate
+                = plSpendStartDatePicker.Value = plSpendEndDatePicker.Value
                 = new DateTime(Convert.ToInt32(CurrentTenderYear.Year), 12, 31, 0, 0, 0);
             contStartDatePicker.MinDate = contEndDatePicker.MinDate = invStartDatePicker.MinDate = invEndDatePicker.MinDate
+                = plSpendStartDatePicker.Value = plSpendEndDatePicker.Value
                 = new DateTime(Convert.ToInt32(CurrentTenderYear.Year), 1, 1, 0, 0, 0);
 
             hasEstimateFreeMoney = false;
@@ -232,6 +235,8 @@ namespace ZcrlTender
                 spenKekvsCBList.SelectedIndexChanged    += plannedSpendingFilterHander;
                 spenNewSystemRButton.CheckedChanged     += plannedSpendingFilterHander;
                 spenAltSystemRButton.CheckedChanged     += plannedSpendingFilterHander;
+                plSpendStartDatePicker.ValueChanged     += plannedSpendingFilterHander;
+                plSpendEndDatePicker.ValueChanged       += plannedSpendingFilterHander;
 
                 // Добавляем обработчики событий для редактирования записей таблиц
                 newInvoiceButton.Click += button10_Click;
@@ -390,6 +395,8 @@ namespace ZcrlTender
                filter.Kekv = spenKekvsCBList.SelectedItem as KekvCode;
                filter.PrimaryKekvSelected = spenNewSystemRButton.Checked;
                filter.Status = Convert.ToInt32(spenStatusCBList.SelectedValue);
+               filter.StartDate = plSpendStartDatePicker.Value;
+               filter.EndDate = plSpendEndDatePicker.Value;
                updatePlannedSpendingList.RunWorkerAsync(filter);
            }
         }
@@ -795,6 +802,8 @@ namespace ZcrlTender
             public bool PrimaryKekvSelected { get; set; }
             public int Status { get; set; }
             public int EstimateId { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
         }
 
         // -------------------------------------------------
@@ -968,7 +977,7 @@ namespace ZcrlTender
                                                             UsedSum = c.Invoices.Where(p => p.Changes.Count > 0).Sum(p => p.Sum)
                                                         }).ToList();
 
-                    e.Result = result;
+                    e.Result = result.OrderByDescending(p => p.ContractDate).ToList();
                 }
             }
             catch (Exception ex)
@@ -1057,7 +1066,7 @@ namespace ZcrlTender
                         result = result.Where(p => p.Status == status).ToList();
                     }
 
-                    e.Result = result;
+                    e.Result = result.OrderByDescending(p => p.Date).ToList();
                 }
             }
             catch (Exception ex)
@@ -1112,6 +1121,8 @@ namespace ZcrlTender
                         }
                     }
 
+                    spendings = spendings.Where(p => (p.CreationDate >= filter.StartDate) && (p.CreationDate <= filter.EndDate)).ToList();
+
                     e.Result = spendings.Select(p => new PlannedSpendingTableEntry 
                     { 
                         Date = p.CreationDate, 
@@ -1120,7 +1131,7 @@ namespace ZcrlTender
                         Sum = p.Sum, 
                         Status = p.Status,
                         RelatedPlannedSpendingRecord = p
-                    }).ToList();
+                    }).OrderByDescending(p => p.Sum).ToList();
                 }
             }
             catch (Exception ex)

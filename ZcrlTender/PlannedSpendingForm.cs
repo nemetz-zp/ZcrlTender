@@ -415,6 +415,12 @@ namespace ZcrlTender
                 return;
             }
 
+            if (spendingFullSum.Value == 0)
+            {
+                balanceChangesTable.CancelEdit();
+                return;
+            }
+
             decimal cellValue = 0;
 
             if (!decimal.TryParse(e.FormattedValue.ToString(), out cellValue))
@@ -437,18 +443,20 @@ namespace ZcrlTender
             {
                 if (i == e.RowIndex)
                 {
-                    sum += cellValue;
+                    continue;
                 }
                 else
                 {
                     sum += Convert.ToDecimal(balanceChangesTable.Rows[i].Cells[0].Value);
                 }
-
-                if (sum > spendingFullSum.Value)
-                {
-                    balanceChangesTable.CancelEdit();
-                    return;
-                }
+            }
+            if ((sum + cellValue) > spendingFullSum.Value)
+            {
+                balanceChangesTable.CancelEdit();
+                controlValueWasChangedByUser = false;
+                balanceChangesTable.Rows[e.RowIndex].Cells[0].Value = (spendingFullSum.Value - sum);
+                controlValueWasChangedByUser = true;
+                return;
             }
         }
 
