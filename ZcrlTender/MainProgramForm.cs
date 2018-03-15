@@ -219,7 +219,7 @@ namespace ZcrlTender
                 EventHandler invoicesFilterHander = (sender, e) => LoadInvoicesTableRecords();
                 invEstimateCBList.SelectedIndexChanged      += invoicesFilterHander;
                 invContractCBList.SelectedIndexChanged      += invoicesFilterHander;
-                invContractorCBList.SelectedIndexChanged    += invoicesFilterHander;
+                invContractorCBList.SelectedIndexChanged    += (sender, e) => UpdateContractsCBLists(false);
                 invKekvsCBList.SelectedIndexChanged         += invoicesFilterHander;
                 invStatusCBList.SelectedIndexChanged        += invoicesFilterHander;
                 invNewSystemRButton.CheckedChanged          += invoicesFilterHander;
@@ -337,10 +337,13 @@ namespace ZcrlTender
         }
 
         // Обновление выпадающего списка с договорами
-        private void UpdateContractsCBLists()
+        private void UpdateContractsCBLists(bool updateContractsTable = true)
         {
             // Обновляем таблицу с контрактами
-            LoadContractsTableRecords();
+            if (updateContractsTable)
+            {
+                LoadContractsTableRecords();
+            }
 
             controlsDataWasChangedByUser = false;
             using (TenderContext tc = new TenderContext())
@@ -1028,6 +1031,10 @@ namespace ZcrlTender
                     if (filter.Contractor.Id > 0)
                     {
                         allInvoices = allInvoices.Where(p => p.Contract.ContractorId == filter.Contractor.Id).ToList();
+                    }
+                    if (filter.Contract.Id > 0)
+                    {
+                        allInvoices = allInvoices.Where(p => p.Contract.Id == filter.Contract.Id).ToList();
                     }
                     if (filter.Kekv.Id > 0)
                     {

@@ -189,7 +189,7 @@ namespace ZcrlTender
                 return;
             }
 
-            if(fullSum.Value == 0)
+            if((currentContract.Id == 0) && (fullSum.Value == 0))
             {
                 NotificationHelper.ShowError("Сума договору повинна бути більша за нуль");
                 return;
