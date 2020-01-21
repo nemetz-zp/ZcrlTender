@@ -169,6 +169,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ReserveMoneyOnSourceControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ReserveMoneyOnSourceControl.Designer.cs">
+      <DependentUpon>ReserveMoneyOnSourceControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="SelectEstimateForReportForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -298,6 +304,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ReserveMoneyOnSourceControl.resx">
+      <DependentUpon>ReserveMoneyOnSourceControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SelectEstimateForReportForm.resx">
       <DependentUpon>SelectEstimateForReportForm.cs</DependentUpon>

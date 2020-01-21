@@ -8,6 +8,7 @@ using TenderLibrary;
 
 namespace ZcrlTender
 {
+    // TODO: Окно предложения переноса источников финансирования с прошлого года
     public class TenderDbInitializer : CreateDatabaseIfNotExists<ZcrlTenderContext>
     {
         protected override void Seed(ZcrlTenderContext context)

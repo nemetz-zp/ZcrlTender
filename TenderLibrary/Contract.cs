@@ -56,12 +56,14 @@ namespace TenderLibrary
         // Счёта взятые по договору
         public virtual ICollection<Invoice> Invoices { get; set; }
         public virtual ICollection<ContractChange> ContractChanges { get; set; }
+        public virtual ICollection<JuristicGuaranty> Guaranties { get; set; }
 
         public Contract()
         {
             RelatedFiles = new List<UploadedFile>();
             Invoices = new List<Invoice>();
             ContractChanges = new List<ContractChange>();
+            Guaranties = new List<JuristicGuaranty>();
         }
 
         [NotMapped]

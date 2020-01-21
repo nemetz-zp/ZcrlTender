@@ -54,6 +54,7 @@
     <Compile Include="DkCode.cs" />
     <Compile Include="Estimate.cs" />
     <Compile Include="Invoice.cs" />
+    <Compile Include="JuristicGuaranty.cs" />
     <Compile Include="KekvCode.cs" />
     <Compile Include="MoneySource.cs" />
     <Compile Include="PlannedSpending.cs" />

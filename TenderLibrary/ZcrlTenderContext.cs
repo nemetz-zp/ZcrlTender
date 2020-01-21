@@ -26,6 +26,7 @@ namespace TenderLibrary
         public DbSet<ContractChange> ContractChanges { get; set; }
         public DbSet<TenderPlanRecordChange> TenderPlanRecordChanges { get; set; }
         public DbSet<ContactPerson> ContactPersons { get; set; }
+        public DbSet<JuristicGuaranty> Gauranties { get; set; }
         public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -78,6 +79,24 @@ namespace TenderLibrary
                 .HasRequired(p => p.Estimate)
                 .WithMany(p => p.PlanRecords)
                 .HasForeignKey(p => p.EstimateId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<MoneySource>()
+                .HasRequired(p => p.Year)
+                .WithMany()
+                .HasForeignKey(p => p.TenderYearId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<JuristicGuaranty>()
+                .HasRequired(p => p.Contract)
+                .WithMany(p => p.Guaranties)
+                .HasForeignKey(p => p.ContractId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<JuristicGuaranty>()
+                .HasRequired(p => p.Source)
+                .WithMany(p => p.Guaranties)
+                .HasForeignKey(p => p.MoneySourceId)
                 .WillCascadeOnDelete(false);
 
             base.OnModelCreating(modelBuilder);

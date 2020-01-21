@@ -13,6 +13,16 @@ namespace TenderLibrary
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public virtual TenderYear Year { get; set; }
+        public virtual int TenderYearId { get; set; }
+
+        public virtual ICollection<JuristicGuaranty> Guaranties { get; set; }
+
+        public MoneySource()
+        {
+            Guaranties = new List<JuristicGuaranty>();
+        }
+
         // Приоритет отображения источника
         public int ViewPriority { get; set; }
 
